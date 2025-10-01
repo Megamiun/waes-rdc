@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Account {
+public class Account implements EntityWithId<UUID> {
     @Id
     private UUID id;
     private String name;

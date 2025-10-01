@@ -13,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static br.com.gabryel.waes.rdc.banking.it.matchers.CustomMatchers.*;
+import static br.com.gabryel.waes.rdc.banking.matchers.CustomMatchers.*;
 import static br.com.gabryel.waes.rdc.banking.model.DocumentType.BSN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -38,10 +38,10 @@ public class AccountIT {
         var result = restTemplate.exchange("/accounts", PUT, new HttpEntity<>(request), AccountDto.class);
 
         assertThat(result, requestWith(CREATED,
-            accountWith(
+            dtoAccountWith(
                 "Name",
                 "Surname",
-                documentWith(BSN, "123.456.789-0"))
+                dtoDocumentWith(BSN, "123.456.789-0"))
             )
         );
     }

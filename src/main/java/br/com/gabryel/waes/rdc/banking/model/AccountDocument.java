@@ -15,7 +15,7 @@ import static jakarta.persistence.EnumType.STRING;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountDocument {
+public class AccountDocument implements EntityWithId<UUID> {
     @Id
     private UUID id;
     private UUID accountId;

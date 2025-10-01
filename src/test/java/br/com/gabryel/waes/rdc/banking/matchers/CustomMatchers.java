@@ -1,7 +1,9 @@
-package br.com.gabryel.waes.rdc.banking.it.matchers;
+package br.com.gabryel.waes.rdc.banking.matchers;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
+import br.com.gabryel.waes.rdc.banking.model.Account;
+import br.com.gabryel.waes.rdc.banking.model.AccountDocument;
 import br.com.gabryel.waes.rdc.banking.model.DocumentType;
 import lombok.experimental.UtilityClass;
 import org.hamcrest.Matcher;
@@ -25,7 +27,7 @@ public class CustomMatchers {
     }
 
     @SafeVarargs
-    public static Matcher<AccountDto> accountWith(String name, String surname, Matcher<? super DocumentDto>... documents) {
+    public static Matcher<AccountDto> dtoAccountWith(String name, String surname, Matcher<? super DocumentDto>... documents) {
         return allOf(
             hasFeature(AccountDto::name, equalTo(name)),
             hasFeature(AccountDto::surname, equalTo(surname)),
@@ -33,10 +35,24 @@ public class CustomMatchers {
         );
     }
 
-    public static Matcher<? super DocumentDto> documentWith(DocumentType documentType, String documentNumber) {
+    public static Matcher<? super DocumentDto> dtoDocumentWith(DocumentType documentType, String documentNumber) {
         return allOf(
             hasFeature(DocumentDto::documentType, equalTo(documentType)),
             hasFeature(DocumentDto::documentNumber, equalTo(documentNumber))
+        );
+    }
+
+    public static Matcher<Account> dbAccountWith(String name, String surname) {
+        return allOf(
+            hasFeature("name", Account::getName, equalTo(name)),
+            hasFeature("surname", Account::getSurname, equalTo(surname))
+        );
+    }
+
+    public static Matcher<AccountDocument> dbDocumentWith(DocumentType documentType, String documentNumber) {
+        return allOf(
+            hasFeature("type", AccountDocument::getType, equalTo(documentType)),
+            hasFeature("number", AccountDocument::getNumber, equalTo(documentNumber))
         );
     }
 }
