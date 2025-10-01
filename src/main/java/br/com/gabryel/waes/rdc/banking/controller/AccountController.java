@@ -1,10 +1,12 @@
 package br.com.gabryel.waes.rdc.banking.controller;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.*;
-import br.com.gabryel.waes.rdc.banking.model.Account;
-import br.com.gabryel.waes.rdc.banking.model.AccountDocument;
+import br.com.gabryel.waes.rdc.banking.model.entity.Account;
+import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
 import br.com.gabryel.waes.rdc.banking.service.AccountService;
+import br.com.gabryel.waes.rdc.banking.service.Ledger;
 import jakarta.websocket.server.PathParam;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,13 +16,12 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/accounts")
+@RequiredArgsConstructor
 public class AccountController {
 
     private final AccountService accountService;
 
-    public AccountController(AccountService accountService) {
-        this.accountService = accountService;
-    }
+    private final Ledger ledger;
 
     // Created out of spec, for simplicity/testing
     @PutMapping
@@ -43,7 +44,7 @@ public class AccountController {
 
     @PutMapping("/{id}/deposits")
     public Boolean deposit(@PathParam("id") UUID id, @RequestBody DepositRequestDto request) {
-        throw new UnsupportedOperationException("TODO Deposit amount to " + id);
+        return ledger.deposit(id, request.amount());
     }
 
     // In-spec methods

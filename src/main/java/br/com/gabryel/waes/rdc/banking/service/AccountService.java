@@ -2,8 +2,8 @@ package br.com.gabryel.waes.rdc.banking.service;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
-import br.com.gabryel.waes.rdc.banking.model.Account;
-import br.com.gabryel.waes.rdc.banking.model.AccountDocument;
+import br.com.gabryel.waes.rdc.banking.model.entity.Account;
+import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
 import br.com.gabryel.waes.rdc.banking.repository.AccountDocumentRepository;
 import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import org.springframework.stereotype.Service;

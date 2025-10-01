@@ -48,7 +48,7 @@ dependencies {
 
     // Integration Test
     "integrationTestImplementation"("org.springframework.boot:spring-boot-starter-test")
-    "integrationTestRuntimeOnly"("com.h2database:h2")
+    "integrationTestRuntimeOnly"("com.h2database:h2:2.4.240")
 }
 
 java {
@@ -59,10 +59,6 @@ java {
 tasks {
     test {
         useJUnitPlatform()
-
-        configure<JacocoTaskExtension> {
-            excludes = listOf("**/controller/**")
-        }
     }
 
     val integrationTest by registering(Test::class) {
@@ -81,10 +77,14 @@ tasks {
 
     jacocoTestReport {
         dependsOn(test)
+
+        configureExclusions()
     }
 
     jacocoTestCoverageVerification {
         dependsOn(test)
+
+        configureExclusions()
 
         violationRules {
             rule {
@@ -94,4 +94,12 @@ tasks {
             }
         }
     }
+}
+
+fun JacocoReportBase.configureExclusions() {
+    classDirectories = files(classDirectories.files.map {
+        fileTree(it) {
+            exclude("**/dto/**", "**/entity/**")
+        }
+    })
 }

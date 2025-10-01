@@ -1,4 +1,4 @@
-package br.com.gabryel.waes.rdc.banking.model;
+package br.com.gabryel.waes.rdc.banking.model.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

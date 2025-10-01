@@ -1,6 +1,6 @@
 package br.com.gabryel.waes.rdc.banking.repository;
 
-import br.com.gabryel.waes.rdc.banking.model.AccountDocument;
+import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

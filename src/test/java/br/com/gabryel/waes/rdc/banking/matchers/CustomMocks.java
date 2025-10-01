@@ -1,6 +1,6 @@
 package br.com.gabryel.waes.rdc.banking.matchers;
 
-import br.com.gabryel.waes.rdc.banking.model.EntityWithId;
+import br.com.gabryel.waes.rdc.banking.model.entity.EntityWithId;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -2,9 +2,9 @@ package br.com.gabryel.waes.rdc.banking.matchers;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
-import br.com.gabryel.waes.rdc.banking.model.Account;
-import br.com.gabryel.waes.rdc.banking.model.AccountDocument;
-import br.com.gabryel.waes.rdc.banking.model.DocumentType;
+import br.com.gabryel.waes.rdc.banking.model.entity.Account;
+import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
+import br.com.gabryel.waes.rdc.banking.model.entity.DocumentType;
 import lombok.experimental.UtilityClass;
 import org.hamcrest.Matcher;
 import org.springframework.http.HttpStatus;
