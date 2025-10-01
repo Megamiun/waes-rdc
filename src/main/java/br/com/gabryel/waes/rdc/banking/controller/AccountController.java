@@ -5,16 +5,15 @@ import br.com.gabryel.waes.rdc.banking.model.Account;
 import br.com.gabryel.waes.rdc.banking.model.AccountDocument;
 import br.com.gabryel.waes.rdc.banking.service.AccountService;
 import jakarta.websocket.server.PathParam;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.net.URI;
+import java.util.List;
+import java.util.UUID;
 
-@Controller
-@RequestMapping("/account")
+@RestController
+@RequestMapping("/accounts")
 public class AccountController {
 
     private final AccountService accountService;
@@ -25,11 +24,13 @@ public class AccountController {
 
     // Created out of spec, for simplicity/testing
     @PutMapping
-    public AccountDto createAccount(@RequestBody CreateAccountRequestDto request) {
+    public ResponseEntity<AccountDto> createAccount(@RequestBody CreateAccountRequestDto request) {
         var account = accountService.saveAccount(request);
-        var documents = accountService.saveDocuments(request, account.id());
+        var documents = accountService.getAccountDocuments(account.getId());
 
-        return map(account, documents);
+        return ResponseEntity
+            .created(URI.create("/accounts/" + account.getId()))
+            .body(map(account, documents));
     }
 
     @GetMapping("/{id}")
@@ -40,8 +41,13 @@ public class AccountController {
         return map(account, documents);
     }
 
+    @PutMapping("/{id}/deposits")
+    public Boolean deposit(@PathParam("id") UUID id, @RequestBody DepositRequestDto request) {
+        throw new UnsupportedOperationException("TODO Deposit amount to " + id);
+    }
+
     // In-spec methods
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/balance")
     public Double getAccountBalance(@PathParam("id") UUID id) {
         throw new UnsupportedOperationException("TODO Get account balance for " + id);
     }
@@ -51,16 +57,16 @@ public class AccountController {
         throw new UnsupportedOperationException("TODO Transfer amount from " + senderId);
     }
 
-    @PutMapping("/{id}/withdrawal")
-    public Boolean requestWithdrawal(@PathParam("id") UUID id, @RequestBody WithdrawalRequestDto request) {
-        throw new UnsupportedOperationException("TODO Withdraw amount for " + id);
+    @PutMapping("/{id}/withdrawals")
+    public Boolean withdraw(@PathParam("id") UUID id, @RequestBody WithdrawalRequestDto request) {
+        throw new UnsupportedOperationException("TODO Withdraw amount from " + id);
     }
 
     private static AccountDto map(Account mapped, List<AccountDocument> documents) {
         var documentDtos = documents.stream()
-            .map(doc -> new DocumentDto(doc.documentType(), doc.number()))
+            .map(doc -> new DocumentDto(doc.getType(), doc.getNumber()))
             .toList();
 
-        return new AccountDto(mapped.id(), mapped.name(), mapped.surname(), documentDtos);
+        return new AccountDto(mapped.getId(), mapped.getName(), mapped.getSurname(), documentDtos);
     }
 }

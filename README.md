@@ -1,10 +1,10 @@
 # WAES RDC - Banking Account
 
 ## Spec
-Write some code in Java to simulate a simple bank account. It should be possible to transfer and withdraw money from an account.
-It is possible to pay with either debit card or credit card.
-If a transfer/withdraw is done with a credit card, 1% of the amount is charged extra.
-Use design patterns where applicable and write some test cases as well.
+- [ ] Write some code in Java to simulate a simple bank account. It should be possible to transfer and withdraw money from an account.
+- [ ] It is possible to pay with either debit card or credit card.
+- [ ] If a transfer/withdraw is done with a credit card, 1% of the amount is charged extra.
+- [ ] Use design patterns where applicable and write some test cases as well.
 
 ### Requirements:
 - [ ] A negative balance is not possible
@@ -27,19 +27,26 @@ Use design patterns where applicable and write some test cases as well.
     - [x] Documents
       - [ ] BSN mandatory for generation
 - [ ] Endpoint for account details is going to be available
+- [ ] Endpoint for deposits is going to be available
 - [ ] A Debit/Credit Card will be requested after account creation
 
 ## Open Issues
 - "Account should contain at least some user details, card details and current balance"
-  - [ ] Do we need current balance as a db field? Or can it be derived?
+  - [x] Do we need current balance as a db field? Or can it be derived? 
+    - **what ever suits you the best, for us it’s ok.**
 - "A negative balance is not possible"
-  - [ ] Can user have debt bigger than balance by using his credit card limit?
+  - [x] Can user have debt bigger than balance by using his credit card limit?
+    - **For simplicity you can assume, it’s not possible to have negative balance at all with any cards.**
 - "One credit card or debit card is linked with one account"
-  - [ ] Can an account have both a credit and a debit card?
+  - [x] Can an account have both a credit and a debit card?
+    - **For simplicity you can assume, it’s one card is linked with one account only.**
 - For me, transfer means that the money should go from one account to another, so:
-  - [ ] Do we need also a deposit endpoint which allows for money to come from outside, such as ATMs? 
+  - [x] Do we need also a deposit endpoint which allows for money to come from outside, such as ATMs? 
+    - **Yes you can add one deposit endpoint.**
     - If not, this is a system that can only lower in total money value(via withdrawal).
 - "If a transfer/withdraw is done with a credit card, 1% of the amount is charged extra."
-  - [ ] Does every transfer/withdrawal has to be associated with a debit or credit card?
+  - [x] Does every transfer/withdrawal has to be associated with a debit or credit card?
+    - **Yes**
 - "It is possible to pay with either debit card or credit card."
-  - [ ] This means as a withdrawal? Or as a different operation?
+  - [x] This means as a withdrawal? Or as a different operation?
+    - **Means withdrawal or transfer.**
