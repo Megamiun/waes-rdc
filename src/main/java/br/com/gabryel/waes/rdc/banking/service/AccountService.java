@@ -24,17 +24,16 @@ public class AccountService {
     }
 
     public Account saveAccount(CreateAccountRequestDto request) {
-        var accountId = UUID.randomUUID();
-        var account = accountRepository.save(new Account(accountId, request.name(), request.surname()));
+        var account = accountRepository.save(map(request));
 
-        saveDocuments(accountId, request.documents());
+        saveDocuments(account.getId(), request.documents());
 
         return account;
     }
 
     public List<AccountDocument> saveDocuments(UUID accountId, List<DocumentDto> documents) {
         var newDocuments = documents.stream()
-            .map(doc -> new AccountDocument(UUID.randomUUID(), accountId, doc.documentType(), doc.documentNumber()))
+            .map(doc -> map(accountId, doc))
             .toList();
 
         return accountDocumentRepository.saveAll(newDocuments);
@@ -46,5 +45,22 @@ public class AccountService {
 
     public List<AccountDocument> getAccountDocuments(UUID accountId) {
         return accountDocumentRepository.findByAccountId(accountId);
+    }
+
+    private static Account map(CreateAccountRequestDto request) {
+        return Account.builder()
+            .id(UUID.randomUUID())
+            .name(request.name())
+            .surname(request.surname())
+            .build();
+    }
+
+    private static AccountDocument map(UUID accountId, DocumentDto doc) {
+        return AccountDocument.builder()
+            .id(UUID.randomUUID())
+            .accountId(accountId)
+            .type(doc.documentType())
+            .number(doc.documentNumber())
+            .build();
     }
 }

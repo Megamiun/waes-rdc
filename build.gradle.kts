@@ -29,6 +29,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     implementation("org.flywaydb:flyway-core")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql:42.7.3")
 
     implementation("me.paulschwarz:spring-dotenv:4.0.0")
@@ -48,6 +49,9 @@ dependencies {
 
     // Integration Test
     "integrationTestImplementation"("org.springframework.boot:spring-boot-starter-test")
+    "integrationTestImplementation"("org.springframework.boot:spring-boot-testcontainers")
+    "integrationTestImplementation"("org.testcontainers:junit-jupiter")
+    "integrationTestImplementation"("org.testcontainers:postgresql")
     "integrationTestRuntimeOnly"("com.h2database:h2:2.4.240")
 }
 

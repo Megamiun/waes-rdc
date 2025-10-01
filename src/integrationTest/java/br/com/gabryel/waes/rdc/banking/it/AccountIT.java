@@ -5,6 +5,7 @@ import br.com.gabryel.waes.rdc.banking.controller.dto.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -22,6 +23,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@ExtendWith(TestContainersExtension.class)
 public class AccountIT {
 
     @Autowired
