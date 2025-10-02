@@ -11,15 +11,22 @@ import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
+import static br.com.gabryel.waes.rdc.banking.helper.NullUtils.firstNonNull;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionMethod.ATM;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus.COMPLETED;
 import static java.math.BigDecimal.ZERO;
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +51,37 @@ public class Ledger {
     }
 
     public BigDecimal getBalance(UUID id) {
-        return ledgerEntryRepository.findByAccountId(id).stream()
+        return getBalance(ledgerEntryRepository.findByAccountId(id));
+    }
+
+    public Page<Pair<UUID, BigDecimal>> getBalances(List<UUID> accountIds, Integer pageSize, Integer pageNumber) {
+        var page = getAccountPage(accountIds, pageSize, pageNumber);
+        var entries = ledgerEntryRepository.findByAccountIdIn(accountIds).stream()
+            .collect(groupingBy((entry) -> entry.getAccount().getId()));
+
+        return page.map(accountId -> Pair.of(
+            accountId,
+            getBalance(entries.getOrDefault(accountId, List.of()))));
+    }
+
+    private Page<UUID> getAccountPage(List<UUID> accountIds, Integer pageSize, Integer pageNumber) {
+        var selectedPageNumber = firstNonNull(pageNumber, 0);
+
+        if (accountIds == null || accountIds.isEmpty()) {
+            var pageable = PageRequest.of(selectedPageNumber, firstNonNull(pageSize, 100));
+            return accountRepository.fetchAccountIds(pageable);
+        }
+
+        var pageable = PageRequest.of(selectedPageNumber, firstNonNull(pageSize, accountIds.size()));
+        var accountsPage = accountIds.stream()
+            .skip(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .toList();
+        return new PageImpl<>(accountsPage, pageable, accountIds.size());
+    }
+
+    private static BigDecimal getBalance(List<LedgerEntry> entries) {
+        return entries.stream()
             .map(LedgerEntry::getAmount)
             .reduce(ZERO, BigDecimal::add);
     }

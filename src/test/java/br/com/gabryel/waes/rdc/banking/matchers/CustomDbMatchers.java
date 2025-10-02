@@ -20,7 +20,7 @@ import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
 @UtilityClass
 public class CustomDbMatchers {
 
-    public static BigDecimal MONEY_EPSILON = BigDecimal.valueOf(0.01);
+    public static BigDecimal MONEY_EPSILON = BigDecimal.valueOf(0.001);
 
     public static Matcher<Account> dbAccountWith(String name, String surname) {
         return allOf(

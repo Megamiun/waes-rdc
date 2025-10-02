@@ -9,7 +9,7 @@
 ### Requirements:
 - [ ] A negative balance is not possible
 - [ ] Account should contain at least some user details, card details and current balance
-- [ ] One rest endpoint to see current available balance in all accounts
+- [x] One rest endpoint to see current available balance in all accounts
 - [ ] One rest endpoint to withdraw money
 - [ ] One rest endpoint to transfer money
 - [ ] One credit card or debit card is linked with one account

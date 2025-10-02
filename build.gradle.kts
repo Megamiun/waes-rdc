@@ -96,7 +96,7 @@ tasks {
                     // Goal: 80%
                     // Most of the code for now is tested on ITs(Controllers/Repositories).
                     // In the future, should arrive in 80% just with the more unit testable parts
-                    minimum = BigDecimal("0.55")
+                    minimum = BigDecimal("0.65")
                 }
             }
         }

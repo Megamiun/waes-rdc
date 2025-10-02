@@ -3,14 +3,20 @@ package br.com.gabryel.waes.rdc.banking.matchers;
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.TransactionDto;
+import br.com.gabryel.waes.rdc.banking.model.entity.LedgerEntry;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus;
 import lombok.experimental.UtilityClass;
 import org.hamcrest.Matcher;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import static br.com.gabryel.waes.rdc.banking.matchers.CustomDbMatchers.MONEY_EPSILON;
 import static org.hamcrest.Matchers.*;
 import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
 
@@ -46,5 +52,12 @@ public class CustomDtoMatchers {
 
     public static Matcher<? super TransactionDto> dtoTransactionWith(TransactionStatus status) {
         return hasFeature(TransactionDto::status, equalTo(status));
+    }
+
+    public static Matcher<? super Pair<UUID, BigDecimal>> dtoAccountBalancePair(UUID accountId, Double balance) {
+        return allOf(
+            hasFeature("accountId", Pair::getFirst, equalTo(accountId)),
+            hasFeature("balance", Pair::getSecond, closeTo(BigDecimal.valueOf(balance), MONEY_EPSILON))
+        );
     }
 }
