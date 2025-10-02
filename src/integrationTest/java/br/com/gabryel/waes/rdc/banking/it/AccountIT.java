@@ -1,24 +1,23 @@
 package br.com.gabryel.waes.rdc.banking.it;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountDto;
-import br.com.gabryel.waes.rdc.banking.controller.dto.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountRequestDto;
+import br.com.gabryel.waes.rdc.banking.it.extensions.TestContainersExtension;
+import br.com.gabryel.waes.rdc.banking.it.services.ApiClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
 import static br.com.gabryel.waes.rdc.banking.matchers.CustomMatchers.*;
-import static br.com.gabryel.waes.rdc.banking.model.entity.DocumentType.BSN;
+import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.BSN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @ActiveProfiles("test")
@@ -27,7 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class AccountIT {
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private ApiClient client;
 
     @Test
     @DisplayName("when saving a valid Account, then should create account")
@@ -37,7 +36,7 @@ public class AccountIT {
             "Surname",
             List.of(new DocumentDto(BSN, "123.456.789-0")));
 
-        var result = restTemplate.exchange("/accounts", PUT, new HttpEntity<>(request), AccountDto.class);
+        var result = client.put("/accounts", request, AccountDto.class);
 
         assertThat(result, requestWith(CREATED,
             dtoAccountWith(

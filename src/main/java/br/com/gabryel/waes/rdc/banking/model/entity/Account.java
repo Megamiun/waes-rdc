@@ -1,8 +1,6 @@
 package br.com.gabryel.waes.rdc.banking.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Account implements EntityWithId<UUID> {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String name;
     private String surname;

@@ -1,6 +1,6 @@
 package br.com.gabryel.waes.rdc.banking.service;
 
-import br.com.gabryel.waes.rdc.banking.controller.dto.CreateAccountRequestDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
@@ -19,8 +19,8 @@ import java.util.List;
 import static br.com.gabryel.waes.rdc.banking.matchers.CustomMatchers.dbAccountWith;
 import static br.com.gabryel.waes.rdc.banking.matchers.CustomMatchers.dbDocumentWith;
 import static br.com.gabryel.waes.rdc.banking.matchers.CustomMocks.configureRepositoryMock;
-import static br.com.gabryel.waes.rdc.banking.model.entity.DocumentType.BSN;
-import static br.com.gabryel.waes.rdc.banking.model.entity.DocumentType.PASSPORT;
+import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.BSN;
+import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.PASSPORT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;

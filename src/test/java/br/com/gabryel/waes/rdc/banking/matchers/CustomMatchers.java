@@ -2,9 +2,11 @@ package br.com.gabryel.waes.rdc.banking.matchers;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.TransactionDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
-import br.com.gabryel.waes.rdc.banking.model.entity.DocumentType;
+import br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType;
+import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus;
 import lombok.experimental.UtilityClass;
 import org.hamcrest.Matcher;
 import org.springframework.http.HttpStatus;
@@ -12,14 +14,16 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
 
 @UtilityClass
 public class CustomMatchers {
 
-    public static Matcher<ResponseEntity<AccountDto>> requestWith(HttpStatus status, Matcher<AccountDto> bodyMatcher) {
+    public static <T> Matcher<ResponseEntity<T>> requestWith(HttpStatus status, T body) {
+        return requestWith(status, equalTo(body));
+    }
+
+    public static <T> Matcher<ResponseEntity<T>> requestWith(HttpStatus status, Matcher<? super T> bodyMatcher) {
         return allOf(
             hasFeature("status code", ResponseEntity::getStatusCode, equalTo(HttpStatusCode.valueOf(status.value()))),
             hasFeature("body", ResponseEntity::getBody, bodyMatcher)
@@ -40,6 +44,10 @@ public class CustomMatchers {
             hasFeature(DocumentDto::documentType, equalTo(documentType)),
             hasFeature(DocumentDto::documentNumber, equalTo(documentNumber))
         );
+    }
+
+    public static Matcher<? super TransactionDto> dtoTransactionWith(TransactionStatus status) {
+        return hasFeature(TransactionDto::status, equalTo(status));
     }
 
     public static Matcher<Account> dbAccountWith(String name, String surname) {

@@ -1,6 +1,5 @@
 spring:
   datasource:
-    driverClassName: org.postgresql.Driver
     username: sa
     password: password
   flyway:

@@ -102,8 +102,6 @@ tasks {
 
 fun JacocoReportBase.configureExclusions() {
     classDirectories = files(classDirectories.files.map {
-        fileTree(it) {
-            exclude("**/dto/**", "**/entity/**")
-        }
+        fileTree(it) { exclude("**/dto/**", "**/entity/**") }
     })
 }
