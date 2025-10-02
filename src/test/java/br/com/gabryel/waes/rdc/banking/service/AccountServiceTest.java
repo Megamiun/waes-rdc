@@ -26,6 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.verify;
@@ -53,7 +54,7 @@ public class AccountServiceTest {
     @Test
     @DisplayName("when saving an account, should save account details")
     public void whenSavingAnAccount_shouldReturnAccount() {
-        var sut = new AccountService(accountRepository, accountDocumentRepository);
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
         var request = getDefaultCreateAccountRequest();
 
         assertThat(
@@ -64,7 +65,7 @@ public class AccountServiceTest {
     @Test
     @DisplayName("when fetching an account, should return account details")
     public void whenFetchingAnAccount_shouldReturnAccountDetails() {
-        var sut = new AccountService(accountRepository, accountDocumentRepository);
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
         accountRepository.save(Account.builder().id(DEFAULT_ACCOUNT_ID).name(TEST_NAME).surname(TEST_SURNAME).build());
 
         assertThat(
@@ -75,7 +76,7 @@ public class AccountServiceTest {
     @Test
     @DisplayName("when fetching account documents, should return account details")
     public void whenFetchingAccountDocuments_shouldReturnAccountDocuments() {
-        var sut = new AccountService(accountRepository, accountDocumentRepository);
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
         when(accountDocumentRepository.findByAccountId(DEFAULT_ACCOUNT_ID)).thenReturn(List.of(
             AccountDocument.builder().type(BSN).number(BSN_NUMBER).build(),
             AccountDocument.builder().type(PASSPORT).number(PASSPORT_NUMBER).build()));
@@ -88,7 +89,7 @@ public class AccountServiceTest {
     @Test
     @DisplayName("when saving an account, should save account details")
     public void whenSavingAnAccount_shouldSaveAccountDetails() {
-        var sut = new AccountService(accountRepository, accountDocumentRepository);
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
 
         var request = getDefaultCreateAccountRequest();
         sut.saveAccount(request);
@@ -102,7 +103,7 @@ public class AccountServiceTest {
     @Test
     @DisplayName("when saving an account, should save their documents")
     public void whenSavingAnAccount_shouldSaveTheirDocuments() {
-        var sut = new AccountService(accountRepository, accountDocumentRepository);
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
 
         var request = getDefaultCreateAccountRequest();
         sut.saveAccount(request);
@@ -114,6 +115,38 @@ public class AccountServiceTest {
             dbDocumentWith(BSN, BSN_NUMBER),
             dbDocumentWith(PASSPORT, PASSPORT_NUMBER))
         );
+    }
+
+    @Test
+    @DisplayName("given no BSN has been given, when saving an account, should fail")
+    public void givenNoBsnHasBeenGiven_whenSavingAnAccount_shouldFail() {
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
+        var request = new CreateAccountRequestDto(
+            TEST_NAME,
+            TEST_SURNAME,
+            List.of(new DocumentDto(PASSPORT, PASSPORT_NUMBER))
+        );
+
+        assertThrows(
+            IllegalStateException.class,
+            () -> sut.saveAccount(request));
+    }
+
+    @Test
+    @DisplayName("given BSN already exists, when saving an account, should fail")
+    public void givenBsnAlreadyExists_whenSavingAnAccount_shouldFail() {
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
+        var request = new CreateAccountRequestDto(
+            TEST_NAME,
+            TEST_SURNAME,
+            List.of(new DocumentDto(BSN, BSN_NUMBER))
+        );
+
+        when(accountDocumentRepository.existsByTypeAndNumber(BSN, BSN_NUMBER)).thenReturn(true);
+
+        assertThrows(
+            IllegalStateException.class,
+            () -> sut.saveAccount(request));
     }
 
     private static CreateAccountRequestDto getDefaultCreateAccountRequest() {

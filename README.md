@@ -8,11 +8,11 @@
 
 ### Requirements:
 - [ ] A negative balance is not possible
-- [ ] Account should contain at least some user details, card details and current balance
+- [x] Account should contain at least some user details, card details and current balance
 - [x] One rest endpoint to see current available balance in all accounts
 - [ ] One rest endpoint to withdraw money
 - [ ] One rest endpoint to transfer money
-- [ ] One credit card or debit card is linked with one account
+- [x] One credit card or debit card is linked with one account
 - [ ] It should be able to audit transfers or withdrawals
 - [x] Front end part is not required
 - [x] Feel free to make some assumptions if needed & mention them in the code assignment
@@ -20,12 +20,12 @@
 
 ## Assumptions/Choices
 - [ ] Account can also be generated via endpoint, asking for user information on generation:
-  - [ ] If a BSN is non duplicated, the account will be created
+  - [x] If a BSN is non duplicated, the account will be created
   - For user details: 
     - [x] Name and Surname
     - [ ] Address
     - [x] Documents
-      - [ ] BSN mandatory for generation
+      - [x] BSN mandatory for generation
 - [x] Endpoint for account details is going to be available
 - [x] Endpoint for deposits is going to be available
 - [x] A Debit/Credit Card will be requested after account creation

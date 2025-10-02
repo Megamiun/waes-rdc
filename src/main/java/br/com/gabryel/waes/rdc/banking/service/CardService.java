@@ -5,8 +5,6 @@ import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountCard;
 import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import br.com.gabryel.waes.rdc.banking.repository.CardRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +20,6 @@ import java.util.stream.Stream;
 import static br.com.gabryel.waes.rdc.banking.model.entity.CardType.CREDIT;
 
 @Service
-@RequiredArgsConstructor
 public class CardService {
     private static final String IIN = "55";
     private static final List<Character> numericCharacters =
@@ -32,9 +29,17 @@ public class CardService {
 
     private final CardRepository cardRepository;
 
-    @Setter
-    @Value("${app.card.limit}")
-    private BigDecimal defaultLimit;
+    private final BigDecimal defaultLimit;
+
+    public CardService(
+        AccountRepository accountRepository,
+        CardRepository cardRepository,
+        @Value("${app.card.limit}") BigDecimal defaultLimit
+    ) {
+        this.accountRepository = accountRepository;
+        this.cardRepository = cardRepository;
+        this.defaultLimit = defaultLimit;
+    }
 
     public AccountCard requestCard(UUID accountId, CreateCardRequestDto request) {
         var account = findAccount(accountId);
