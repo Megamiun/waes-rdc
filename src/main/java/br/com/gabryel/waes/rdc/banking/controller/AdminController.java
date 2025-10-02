@@ -15,7 +15,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-public class ManagerController {
+public class AdminController {
 
     private final Ledger ledger;
 

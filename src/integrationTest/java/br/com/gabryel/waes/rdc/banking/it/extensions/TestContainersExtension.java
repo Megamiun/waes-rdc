@@ -1,9 +1,6 @@
 package br.com.gabryel.waes.rdc.banking.it.extensions;
 
-import br.com.gabryel.waes.rdc.banking.repository.AccountDocumentRepository;
-import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
-import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
-import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
+import br.com.gabryel.waes.rdc.banking.repository.*;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -20,6 +17,7 @@ public class TestContainersExtension implements BeforeAllCallback, AfterEachCall
     private static final List<Class<? extends JpaRepository<?, ?>>> deletionOrder = List.of(
         LedgerEntryRepository.class,
         TransactionRepository.class,
+        CardRepository.class,
         AccountDocumentRepository.class,
         AccountRepository.class
     );

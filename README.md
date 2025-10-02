@@ -28,7 +28,10 @@
       - [ ] BSN mandatory for generation
 - [x] Endpoint for account details is going to be available
 - [x] Endpoint for deposits is going to be available
-- [ ] A Debit/Credit Card will be requested after account creation
+- [x] A Debit/Credit Card will be requested after account creation
+  - For simplicity, we are not going to be PCI-DSS compliant here
+    - We will save PAN and CVV on an table that is not more protected than the rest of the system
+    - And there will be one endpoint that can return the credit card data for the current user
 
 ## Open Issues
 - "Account should contain at least some user details, card details and current balance"
@@ -50,3 +53,6 @@
 - "It is possible to pay with either debit card or credit card."
   - [x] This means as a withdrawal? Or as a different operation?
     - **Means withdrawal or transfer.**
+
+## Not implemented
+- /account/{accountId}/cards/{cardId} will not be implemented

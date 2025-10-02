@@ -18,6 +18,6 @@ public class Account implements IdHolder<UUID> {
     private UUID id;
     private String name;
     private String surname;
-    @Column(name = "created_at")
+
     private LocalDateTime createdAt;
 }
