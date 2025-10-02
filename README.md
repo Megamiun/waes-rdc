@@ -14,8 +14,8 @@
 - [ ] One rest endpoint to transfer money
 - [ ] One credit card or debit card is linked with one account
 - [ ] It should be able to audit transfers or withdrawals
-- [ ] Front end part is not required
-- [ ] Feel free to make some assumptions if needed & mention them in the code assignment
+- [x] Front end part is not required
+- [x] Feel free to make some assumptions if needed & mention them in the code assignment
 - [ ] Good to have: Deploy this service somewhere (AWS/Azure) or deploy locally
 
 ## Assumptions/Choices
@@ -26,8 +26,8 @@
     - [ ] Address
     - [x] Documents
       - [ ] BSN mandatory for generation
-- [ ] Endpoint for account details is going to be available
-- [ ] Endpoint for deposits is going to be available
+- [x] Endpoint for account details is going to be available
+- [x] Endpoint for deposits is going to be available
 - [ ] A Debit/Credit Card will be requested after account creation
 
 ## Open Issues

@@ -14,7 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static br.com.gabryel.waes.rdc.banking.matchers.CustomMatchers.*;
+import static br.com.gabryel.waes.rdc.banking.matchers.CustomDtoMatchers.*;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.BSN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;

@@ -19,7 +19,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static br.com.gabryel.waes.rdc.banking.matchers.CustomMatchers.*;
+import static br.com.gabryel.waes.rdc.banking.matchers.CustomDtoMatchers.dtoTransactionWith;
+import static br.com.gabryel.waes.rdc.banking.matchers.CustomDtoMatchers.requestWith;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.BSN;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus.COMPLETED;
 import static org.hamcrest.MatcherAssert.assertThat;

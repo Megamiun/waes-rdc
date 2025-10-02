@@ -43,6 +43,12 @@ public class Ledger {
         return transaction;
     }
 
+    public BigDecimal getBalance(UUID id) {
+        return ledgerEntryRepository.findByAccountId(id).stream()
+            .map(LedgerEntry::getAmount)
+            .reduce(ZERO, BigDecimal::add);
+    }
+
     private static LedgerEntry createLedgerEntry(Account account, Transaction transaction, BigDecimal amount, LedgerEntryType type) {
         return LedgerEntry.builder()
             .type(type)
@@ -61,11 +67,5 @@ public class Ledger {
             .owner(account)
             .amount(amount)
             .build();
-    }
-
-    public BigDecimal getBalance(UUID id) {
-        return ledgerEntryRepository.findByAccountId(id).stream()
-            .map(LedgerEntry::getAmount)
-            .reduce(ZERO, BigDecimal::add);
     }
 }

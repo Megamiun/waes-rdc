@@ -18,7 +18,7 @@ import static jakarta.persistence.FetchType.EAGER;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountDocument implements EntityWithId<UUID> {
+public class AccountDocument implements IdHolder<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

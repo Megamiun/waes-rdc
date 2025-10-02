@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Account implements EntityWithId<UUID> {
+public class Account implements IdHolder<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

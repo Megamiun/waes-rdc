@@ -19,7 +19,7 @@ import static jakarta.persistence.FetchType.EAGER;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LedgerEntry implements EntityWithId<UUID> {
+public class LedgerEntry implements IdHolder<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
