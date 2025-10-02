@@ -110,7 +110,7 @@ public class AccountCardServiceTest {
         when(cardRepository.existsByAccountIdAndType(DEFAULT_ACCOUNT_ID, DEBIT)).thenReturn(true);
 
         assertThrows(
-            IllegalArgumentException.class,
-            () -> sut.requestCard(UUID.randomUUID(), new CreateCardRequestDto(DEBIT, "")));
+            IllegalStateException.class,
+            () -> sut.requestCard(DEFAULT_ACCOUNT_ID, new CreateCardRequestDto(DEBIT, "")));
     }
 }
