@@ -4,10 +4,12 @@ import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.LedgerEntry;
 import br.com.gabryel.waes.rdc.banking.model.entity.Transaction;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType;
+import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
 import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,12 +25,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static br.com.gabryel.waes.rdc.banking.matchers.CustomDbMatchers.*;
-import static br.com.gabryel.waes.rdc.banking.matchers.CustomDtoMatchers.dtoAccountBalancePair;
 import static br.com.gabryel.waes.rdc.banking.matchers.CustomMocks.configureRepositoryMock;
+import static br.com.gabryel.waes.rdc.banking.matchers.TestConstants.MONEY_EPSILON;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus.COMPLETED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentCaptor.captor;
@@ -196,5 +198,30 @@ public class LedgerTest {
     private static LedgerEntry ledgerEntryWithAmount(UUID accountId, String amount) {
         var account = Account.builder().id(accountId).build();
         return LedgerEntry.builder().account(account).amount(new BigDecimal(amount)).build();
+    }
+
+    public static Matcher<Transaction> dbTransactionWith(UUID accountId, TransactionType type, TransactionStatus status, double amount, double feeAmount) {
+        return allOf(
+            hasFeature("ownerId", transaction -> transaction.getOwner().getId(), equalTo(accountId)),
+            hasFeature("amount", Transaction::getAmount, closeTo(BigDecimal.valueOf(amount), MONEY_EPSILON)),
+            hasFeature("feeAmount", Transaction::getFeeAmount, closeTo(BigDecimal.valueOf(feeAmount), MONEY_EPSILON)),
+            hasFeature("type", Transaction::getType, equalTo(type)),
+            hasFeature("status", Transaction::getStatus, equalTo(status))
+        );
+    }
+
+    public static Matcher<LedgerEntry> dbLedgerEntryWith(LedgerEntryType type, UUID accountId, double amount) {
+        return allOf(
+            hasFeature("accountId", entry -> entry.getAccount().getId(), equalTo(accountId)),
+            hasFeature("amount", LedgerEntry::getAmount, closeTo(BigDecimal.valueOf(amount), MONEY_EPSILON)),
+            hasFeature("type", LedgerEntry::getType, equalTo(type))
+        );
+    }
+
+    public static Matcher<Pair<UUID, BigDecimal>> dtoAccountBalancePair(UUID accountId, Double balance) {
+        return allOf(
+            hasFeature("accountId", Pair::getFirst, equalTo(accountId)),
+            hasFeature("balance", Pair::getSecond, closeTo(BigDecimal.valueOf(balance), MONEY_EPSILON))
+        );
     }
 }

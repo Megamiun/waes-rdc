@@ -4,8 +4,10 @@ import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountReque
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
+import br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType;
 import br.com.gabryel.waes.rdc.banking.repository.AccountDocumentRepository;
 import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,14 +19,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 
-import static br.com.gabryel.waes.rdc.banking.matchers.CustomDbMatchers.dbAccountWith;
-import static br.com.gabryel.waes.rdc.banking.matchers.CustomDbMatchers.dbDocumentWith;
 import static br.com.gabryel.waes.rdc.banking.matchers.CustomMocks.configureRepositoryMock;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.BSN;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.PASSPORT;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.verify;
@@ -123,6 +124,20 @@ public class AccountServiceTest {
                 new DocumentDto(BSN, BSN_NUMBER),
                 new DocumentDto(PASSPORT, PASSPORT_NUMBER)
             )
+        );
+    }
+
+    public static Matcher<Account> dbAccountWith(String name, String surname) {
+        return allOf(
+            hasFeature("name", Account::getName, equalTo(name)),
+            hasFeature("surname", Account::getSurname, equalTo(surname))
+        );
+    }
+
+    public static Matcher<AccountDocument> dbDocumentWith(DocumentType documentType, String documentNumber) {
+        return allOf(
+            hasFeature("type", AccountDocument::getType, equalTo(documentType)),
+            hasFeature("number", AccountDocument::getNumber, equalTo(documentNumber))
         );
     }
 }
