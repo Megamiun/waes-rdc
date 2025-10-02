@@ -8,6 +8,8 @@
 
 ### Requirements:
 - [ ] A negative balance is not possible
+  - [ ] Withdrawal
+  - [ ] Transfer
 - [x] Account should contain at least some user details, card details and current balance
 - [x] One rest endpoint to see current available balance in all accounts
 - [ ] One rest endpoint to withdraw money
@@ -19,11 +21,11 @@
 - [ ] Good to have: Deploy this service somewhere (AWS/Azure) or deploy locally
 
 ## Assumptions/Choices
-- [ ] Account can also be generated via endpoint, asking for user information on generation:
+- [x] Account can also be generated via endpoint, asking for user information on generation:
   - [x] If a BSN is non duplicated, the account will be created
   - For user details: 
     - [x] Name and Surname
-    - [ ] Address
+    - [x] ~~Address~~
     - [x] Documents
       - [x] BSN mandatory for generation
 - [x] Endpoint for account details is going to be available
@@ -56,3 +58,4 @@
 
 ## Not implemented
 - /account/{accountId}/cards/{cardId} will not be implemented
+- Address removed, on basis of priority
