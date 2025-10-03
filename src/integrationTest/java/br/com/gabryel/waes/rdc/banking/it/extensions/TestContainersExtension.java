@@ -16,6 +16,7 @@ public class TestContainersExtension implements BeforeAllCallback, AfterEachCall
 
     private static final List<Class<? extends JpaRepository<?, ?>>> deletionOrder = List.of(
         LedgerEntryRepository.class,
+        TransactionTransferRepository.class,
         TransactionRepository.class,
         CardRepository.class,
         AccountDocumentRepository.class,

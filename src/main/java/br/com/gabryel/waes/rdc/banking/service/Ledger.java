@@ -6,7 +6,6 @@ import br.com.gabryel.waes.rdc.banking.model.entity.*;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionMethod;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
-import br.com.gabryel.waes.rdc.banking.model.exceptions.NonExistentCardForAccount;
 import br.com.gabryel.waes.rdc.banking.model.exceptions.UnderBalanceForAccount;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,6 +133,11 @@ public class Ledger {
         return page.map(accountId -> Pair.of(
             accountId,
             getBalance(entries.getOrDefault(accountId, List.of()))));
+    }
+
+    public Page<Transaction> getTransactions(List<UUID> accountIds, List<TransactionType> types, Integer pageSize, Integer pageNumber) {
+        var page = Pageable.ofSize(firstNonNull(pageSize, 100)).withPage(firstNonNull(pageNumber, 0));
+        return transactionRepository.findByOwnerIdInAndTypeIn(accountIds, types, page);
     }
 
     private Page<UUID> getAccountPage(List<UUID> accountIds, Integer pageSize, Integer pageNumber) {

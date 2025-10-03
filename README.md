@@ -17,7 +17,7 @@
 - [x] One rest endpoint to withdraw money
 - [x] One rest endpoint to transfer money
 - [x] One credit card or debit card is linked with one account
-- [ ] It should be able to audit transfers or withdrawals
+- [x] It should be able to audit transfers or withdrawals
 - [x] Front end part is not required
 - [x] Feel free to make some assumptions if needed & mention them in the code assignment
 - [ ] Good to have: Deploy this service somewhere (AWS/Azure) or deploy locally

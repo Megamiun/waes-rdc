@@ -53,6 +53,6 @@ public class AccountTransactionsController {
     }
 
     private static TransactionDto mapToDto(Transaction transaction) {
-        return new TransactionDto(transaction.getId(), transaction.getStatus());
+        return new TransactionDto(transaction.getId(), transaction.getStatus(), transaction.getAmount(), transaction.getFeeAmount());
     }
 }

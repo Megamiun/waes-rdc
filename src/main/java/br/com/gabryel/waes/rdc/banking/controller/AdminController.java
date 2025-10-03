@@ -1,6 +1,8 @@
 package br.com.gabryel.waes.rdc.banking.controller;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountBalanceDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.AccountTransactionDto;
+import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
 import br.com.gabryel.waes.rdc.banking.service.Ledger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,5 +30,17 @@ public class AdminController {
     ) {
         return ledger.getBalances(accountIds, pageSize, pageNumber).map(accountToBalance ->
             new AccountBalanceDto(accountToBalance.getFirst(), accountToBalance.getSecond()));
+    }
+
+    // In-spec methods
+    @GetMapping("/transactions")
+    public Page<AccountTransactionDto> getTransactions(
+        @RequestParam("accountIds") List<UUID> accountIds,
+        @RequestParam("types") List<TransactionType> types,
+        @RequestParam Integer pageSize,
+        @RequestParam Integer pageNumber
+    ) {
+        return ledger.getTransactions(accountIds, types, pageSize, pageNumber).map(t ->
+            new AccountTransactionDto(t.getOwner().getId(), t.getId(), t.getStatus(), t.getAmount(), t.getFeeAmount()));
     }
 }
