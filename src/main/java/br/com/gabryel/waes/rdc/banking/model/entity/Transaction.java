@@ -30,6 +30,10 @@ public class Transaction implements IdHolder<UUID> {
     @ManyToOne(fetch = EAGER)
     private Account owner;
 
+    @JoinColumn(name = "card_id")
+    @ManyToOne(fetch = EAGER)
+    private AccountCard card;
+
     private BigDecimal amount;
     private BigDecimal feeAmount;
 

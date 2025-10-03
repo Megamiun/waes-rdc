@@ -1,0 +1,1 @@
+ALTER TABLE transaction ADD COLUMN card_id UUID REFERENCES account_card;

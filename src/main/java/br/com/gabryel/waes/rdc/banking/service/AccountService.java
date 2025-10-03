@@ -1,21 +1,20 @@
 package br.com.gabryel.waes.rdc.banking.service;
 
-import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType;
 import br.com.gabryel.waes.rdc.banking.repository.AccountDocumentRepository;
 import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
-
-import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.BSN;
 
 @Service
 public class AccountService {
@@ -36,6 +35,7 @@ public class AccountService {
         this.primaryDocumentType = primaryDocumentType;
     }
 
+    @Transactional
     public Account saveAccount(CreateAccountRequestDto request) {
         var primaryDocument = request.documents().stream()
             .filter(doc -> doc.documentType() == primaryDocumentType)
@@ -53,6 +53,15 @@ public class AccountService {
 
     public Account getAccount(UUID accountId) {
         return accountRepository.findById(accountId).orElse(null);
+    }
+
+    public Page<Account> getAccounts(Pageable pageable) {
+        return accountRepository.findAll(pageable);
+    }
+
+    public Account findExistingAccount(UUID accountId) {
+        return accountRepository.findById(accountId)
+            .orElseThrow(() -> new IllegalArgumentException("Account with id " + accountId + " not found"));
     }
 
     public List<AccountDocument> getAccountDocuments(UUID accountId) {

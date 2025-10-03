@@ -3,7 +3,6 @@ package br.com.gabryel.waes.rdc.banking.service;
 import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateCardRequestDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountCard;
-import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import br.com.gabryel.waes.rdc.banking.repository.CardRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -25,24 +24,24 @@ public class CardService {
     private static final List<Character> numericCharacters =
         List.of('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
 
-    private final AccountRepository accountRepository;
+    private final AccountService accountService;
 
     private final CardRepository cardRepository;
 
     private final BigDecimal defaultLimit;
 
     public CardService(
-        AccountRepository accountRepository,
+        AccountService accountService,
         CardRepository cardRepository,
         @Value("${app.card.limit}") BigDecimal defaultLimit
     ) {
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
         this.cardRepository = cardRepository;
         this.defaultLimit = defaultLimit;
     }
 
     public AccountCard requestCard(UUID accountId, CreateCardRequestDto request) {
-        var account = findAccount(accountId);
+        var account = accountService.findExistingAccount(accountId);
 
         if (cardRepository.existsByAccountIdAndType(accountId, request.type()))
             throw new IllegalStateException("Card with type " + request.type() + " already exists for account with id " + accountId);
@@ -51,14 +50,9 @@ public class CardService {
     }
 
     public Page<AccountCard> getCards(UUID accountId) {
-        var account = findAccount(accountId);
+        var account = accountService.findExistingAccount(accountId);
 
         return cardRepository.findByAccountId(account.getId(), Pageable.unpaged());
-    }
-
-    private Account findAccount(UUID accountId) {
-        return accountRepository.findById(accountId)
-            .orElseThrow(() -> new IllegalArgumentException("Account with id " + accountId + " not found"));
     }
 
     private AccountCard createCard(Account account, CreateCardRequestDto request) {

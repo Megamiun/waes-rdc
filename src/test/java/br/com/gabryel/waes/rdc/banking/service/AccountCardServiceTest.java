@@ -4,7 +4,6 @@ import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateCardRequestD
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountCard;
 import br.com.gabryel.waes.rdc.banking.model.entity.CardType;
-import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import br.com.gabryel.waes.rdc.banking.repository.CardRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +25,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
@@ -34,16 +34,15 @@ public class AccountCardServiceTest {
     private final static UUID DEFAULT_ACCOUNT_ID = UUID.randomUUID();
 
     @Mock(strictness = LENIENT)
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     @Mock(strictness = LENIENT)
     private CardRepository cardRepository;
 
     @BeforeEach
     void setUp() {
-        configureRepositoryMock(accountRepository);
-
-        accountRepository.save(Account.builder().id(DEFAULT_ACCOUNT_ID).build());
+        when(accountService.findExistingAccount(DEFAULT_ACCOUNT_ID))
+            .thenReturn(Account.builder().id(DEFAULT_ACCOUNT_ID).build());
 
         configureRepositoryMock(cardRepository);
     }
@@ -51,7 +50,7 @@ public class AccountCardServiceTest {
     @Test
     @DisplayName("when adding a card, should return card data given by request")
     public void whenAddingACard_shouldReturnCardData() {
-        var sut = new CardService(accountRepository, cardRepository, new BigDecimal("2000"));
+        var sut = new CardService(accountService, cardRepository, new BigDecimal("2000"));
 
         assertThat(
             sut.requestCard(DEFAULT_ACCOUNT_ID, new CreateCardRequestDto(DEBIT, "Gabryel Monteiro")),
@@ -65,7 +64,7 @@ public class AccountCardServiceTest {
     @Test
     @DisplayName("when adding a card, should return expiration date 4 years in the future")
     public void whenAddingACard_shouldReturnReturnExpirationDate4YearsInTheFuture() {
-        var sut = new CardService(accountRepository, cardRepository, new BigDecimal("2000"));
+        var sut = new CardService(accountService, cardRepository, new BigDecimal("2000"));
 
         // For consistency, I could have used a Clock, so there is no risk of creating turning a month mid-test run
         // For simplicity, I will not do so
@@ -85,7 +84,7 @@ public class AccountCardServiceTest {
     @DisplayName("when adding a card, should return correct limit")
     @ParameterizedTest(name = "when adding a {0} card, should return limit {1}")
     public void whenAddingACard_shouldReturnReturnExpirationDate4YearsInTheFuture(CardType type, BigDecimal limit) {
-        var sut = new CardService(accountRepository, cardRepository, new BigDecimal("2000"));
+        var sut = new CardService(accountService, cardRepository, new BigDecimal("2000"));
 
         var result = sut.requestCard(DEFAULT_ACCOUNT_ID, new CreateCardRequestDto(type, ""));
         assertThat(result.getLimit(), equalTo(limit));
@@ -94,7 +93,9 @@ public class AccountCardServiceTest {
     @Test
     @DisplayName("given account does not exist, when adding a card, should fail")
     public void givenAccountDoesNotExist_whenAddingACard_shouldFail() {
-        var sut = new CardService(accountRepository, cardRepository, new BigDecimal("2000"));
+        var sut = new CardService(accountService, cardRepository, new BigDecimal("2000"));
+
+        when(accountService.findExistingAccount(any())).thenThrow(new IllegalArgumentException());
 
         assertThrows(
             IllegalArgumentException.class,
@@ -104,7 +105,7 @@ public class AccountCardServiceTest {
     @Test
     @DisplayName("given card with type already exists, when adding a card, should fail")
     public void givenCardWithTypeAlreadyExists_whenAddingACard_shouldFail() {
-        var sut = new CardService(accountRepository, cardRepository, new BigDecimal("2000"));
+        var sut = new CardService(accountService, cardRepository, new BigDecimal("2000"));
 
         when(cardRepository.existsByAccountIdAndType(DEFAULT_ACCOUNT_ID, DEBIT)).thenReturn(true);
 

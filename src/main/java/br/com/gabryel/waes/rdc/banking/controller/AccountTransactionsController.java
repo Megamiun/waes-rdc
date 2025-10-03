@@ -40,8 +40,12 @@ public class AccountTransactionsController {
     }
 
     @PutMapping("/withdrawals")
-    public Boolean withdraw(@PathVariable("accountId") UUID accountId, @RequestBody WithdrawalRequestDto request) {
-        throw new UnsupportedOperationException("TODO Withdraw amount from " + accountId);
+    public ResponseEntity<TransactionDto> withdraw(@PathVariable("accountId") UUID accountId, @RequestBody WithdrawalRequestDto request) {
+        var transaction = ledger.withdraw(accountId, request);
+
+        return ResponseEntity
+            .created(URI.create("/accounts/" + accountId + "/transactions/" + transaction.getId()))
+            .body(mapToDto(transaction));
     }
 
     private static TransactionDto mapToDto(Transaction transaction) {

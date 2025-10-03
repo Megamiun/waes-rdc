@@ -2,17 +2,19 @@
 
 ## Spec
 - [ ] Write some code in Java to simulate a simple bank account. It should be possible to transfer and withdraw money from an account.
-- [ ] It is possible to pay with either debit card or credit card.
+- [x] It is possible to pay with either debit card or credit card.
 - [ ] If a transfer/withdraw is done with a credit card, 1% of the amount is charged extra.
+    - [x] Withdrawal
+    - [ ] Transfer
 - [ ] Use design patterns where applicable and write some test cases as well.
 
 ### Requirements:
 - [ ] A negative balance is not possible
-  - [ ] Withdrawal
+  - [x] Withdrawal
   - [ ] Transfer
 - [x] Account should contain at least some user details, card details and current balance
 - [x] One rest endpoint to see current available balance in all accounts
-- [ ] One rest endpoint to withdraw money
+- [x] One rest endpoint to withdraw money
 - [ ] One rest endpoint to transfer money
 - [x] One credit card or debit card is linked with one account
 - [ ] It should be able to audit transfers or withdrawals
