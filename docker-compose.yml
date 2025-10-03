@@ -1,0 +1,36 @@
+services:
+  app:
+    image: gradle:9.1.0-jdk25
+    ports:
+      - "8080:8080"
+    working_dir: /app
+    command: ["./gradlew", "bootRun"]
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/rdc
+      DB_USERNAME: rdc_user
+      DB_PASSWORD: rdc_password
+    volumes:
+      - ./src:/app/src
+      - ./build.gradle.kts:/app/build.gradle.kts
+      - ./gradle:/app/gradle
+      - ./gradlew:/app/gradlew
+      - build_folder:/app/build
+      - gradle_cache:/home/gradle/.gradle
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17.0-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: rdc
+      POSTGRES_USER: rdc_user
+      POSTGRES_PASSWORD: rdc_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+  gradle_cache:
+  build_folder:

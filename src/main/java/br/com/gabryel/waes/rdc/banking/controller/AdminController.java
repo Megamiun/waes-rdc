@@ -24,9 +24,9 @@ public class AdminController {
     // In-spec methods
     @GetMapping("/balances")
     public Page<AccountBalanceDto> getAccountBalance(
-        @RequestParam("accountIds") List<UUID> accountIds,
-        @RequestParam Integer pageSize,
-        @RequestParam Integer pageNumber
+        @RequestParam(value = "accountIds", required = false) List<UUID> accountIds,
+        @RequestParam(required = false) Integer pageSize,
+        @RequestParam(required = false) Integer pageNumber
     ) {
         return ledger.getBalances(accountIds, pageSize, pageNumber).map(accountToBalance ->
             new AccountBalanceDto(accountToBalance.getFirst(), accountToBalance.getSecond()));
@@ -35,10 +35,10 @@ public class AdminController {
     // In-spec methods
     @GetMapping("/transactions")
     public Page<AccountTransactionDto> getTransactions(
-        @RequestParam("accountIds") List<UUID> accountIds,
-        @RequestParam("types") List<TransactionType> types,
-        @RequestParam Integer pageSize,
-        @RequestParam Integer pageNumber
+        @RequestParam(value = "accountIds", required = false) List<UUID> accountIds,
+        @RequestParam(value = "types", required = false) List<TransactionType> types,
+        @RequestParam(required = false) Integer pageSize,
+        @RequestParam(required = false) Integer pageNumber
     ) {
         return ledger.getTransactions(accountIds, types, pageSize, pageNumber).map(t ->
             new AccountTransactionDto(t.getOwner().getId(), t.getId(), t.getStatus(), t.getAmount(), t.getFeeAmount()));
