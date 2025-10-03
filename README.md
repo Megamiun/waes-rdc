@@ -6,7 +6,7 @@
 - If a transfer/withdraw is done with a credit card, 1% of the amount is charged extra.
     - [x] Withdrawal
     - [x] Transfer
-- [ ] Use design patterns where applicable and write some test cases as well.
+- [x] Use design patterns where applicable and write some test cases as well.
 
 ### Requirements:
 - A negative balance is not possible
@@ -20,7 +20,7 @@
 - [x] It should be able to audit transfers or withdrawals
 - [x] Front end part is not required
 - [x] Feel free to make some assumptions if needed & mention them in the code assignment
-- [ ] Good to have: Deploy this service somewhere (AWS/Azure) or deploy locally
+- [x] Good to have: Deploy this service somewhere (AWS/Azure) or deploy locally
 
 ## Running
 
