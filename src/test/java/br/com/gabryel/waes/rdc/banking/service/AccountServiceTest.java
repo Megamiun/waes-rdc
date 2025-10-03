@@ -1,10 +1,13 @@
 package br.com.gabryel.waes.rdc.banking.service;
 
-import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.DocumentDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountRequestDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.MissingPrimaryDocument;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.NonExistentAccount;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.RepeatedPrimaryDocument;
 import br.com.gabryel.waes.rdc.banking.repository.AccountDocumentRepository;
 import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import org.hamcrest.Matcher;
@@ -24,7 +27,6 @@ import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.BS
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType.PASSPORT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hobsoft.hamcrest.compose.ComposeMatchers.hasFeature;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentCaptor.captor;
@@ -74,6 +76,16 @@ public class AccountServiceTest {
     }
 
     @Test
+    @DisplayName("given account doesn't exist, when fetching an existing account, should fail")
+    public void givenAccountDoesntExist_whenFetchingAnAccount_shouldFail() {
+        var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
+
+        assertThrows(
+            NonExistentAccount.class,
+            () -> sut.findExistingAccount(DEFAULT_ACCOUNT_ID));
+    }
+
+    @Test
     @DisplayName("when fetching account documents, should return account details")
     public void whenFetchingAccountDocuments_shouldReturnAccountDocuments() {
         var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
@@ -118,7 +130,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    @DisplayName("given no BSN has been given, when saving an account, should fail")
+    @DisplayName("given no BSN has been given, when saving an account, should fail with MissingPrimaryDocument")
     public void givenNoBsnHasBeenGiven_whenSavingAnAccount_shouldFail() {
         var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
         var request = new CreateAccountRequestDto(
@@ -128,12 +140,12 @@ public class AccountServiceTest {
         );
 
         assertThrows(
-            IllegalStateException.class,
+            MissingPrimaryDocument.class,
             () -> sut.saveAccount(request));
     }
 
     @Test
-    @DisplayName("given BSN already exists, when saving an account, should fail")
+    @DisplayName("given BSN already exists, when saving an account, should fail with RepeatedPrimaryDocument")
     public void givenBsnAlreadyExists_whenSavingAnAccount_shouldFail() {
         var sut = new AccountService(accountRepository, accountDocumentRepository, BSN);
         var request = new CreateAccountRequestDto(
@@ -145,7 +157,7 @@ public class AccountServiceTest {
         when(accountDocumentRepository.existsByTypeAndNumber(BSN, BSN_NUMBER)).thenReturn(true);
 
         assertThrows(
-            IllegalStateException.class,
+            RepeatedPrimaryDocument.class,
             () -> sut.saveAccount(request));
     }
 

@@ -6,6 +6,8 @@ import br.com.gabryel.waes.rdc.banking.model.entity.*;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionMethod;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.NonExistentCardForAccount;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.UnderBalanceForAccount;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionTransferRepository;
@@ -102,7 +104,7 @@ public class Ledger {
     private Transaction createTransaction(Account account, TransactionType transactionType, UUID cardId, BigDecimal amount) {
         var accountId = account.getId();
 
-        var chosenCard = getChosenCard(accountId, cardId, account);
+        var chosenCard = cardService.getExistentCard(accountId, cardId);
         var fee = calculateTransactionFee(amount, chosenCard.getType());
 
         validateBalance(accountId, amount, fee);
@@ -155,13 +157,6 @@ public class Ledger {
             .reduce(ZERO, BigDecimal::add);
     }
 
-    private AccountCard getChosenCard(UUID accountId, UUID cardId, Account account) {
-        return cardService.getCards(account.getId()).stream()
-            .filter(card -> card.getId() == cardId)
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Card with id " + cardId + " not found on account with id " + accountId));
-    }
-
     private BigDecimal calculateTransactionFee(BigDecimal amount, CardType type) {
         if (type == CardType.CREDIT)
             return amount.multiply(creditCardFee);
@@ -174,7 +169,7 @@ public class Ledger {
         var balance = getBalance(accountId);
 
         if (total.compareTo(balance) > 0)
-            throw new IllegalStateException("Account " + accountId + " balance is below requested amount");
+            throw new UnderBalanceForAccount(accountId, total);
     }
 
     private static LedgerEntry createLedgerEntry(Account account, Transaction transaction, BigDecimal amount, LedgerEntryType type) {

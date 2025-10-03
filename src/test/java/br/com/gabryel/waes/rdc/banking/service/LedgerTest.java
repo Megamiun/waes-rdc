@@ -6,6 +6,7 @@ import br.com.gabryel.waes.rdc.banking.model.entity.*;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.UnderBalanceForAccount;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionTransferRepository;
@@ -71,10 +72,11 @@ public class LedgerTest {
         when(accountService.findExistingAccount(ACCOUNT_ID_2))
             .thenReturn(Account.builder().id(ACCOUNT_ID_2).build());
 
-        when(cardService.getCards(ACCOUNT_ID)).thenReturn(new PageImpl<>(List.of(
-            AccountCard.builder().id(DEBIT_ID).type(DEBIT).build(),
-            AccountCard.builder().id(CREDIT_ID).type(CREDIT).limit(new BigDecimal("100")).build()
-        )));
+        when(cardService.getExistentCard(ACCOUNT_ID, DEBIT_ID))
+            .thenReturn(AccountCard.builder().id(DEBIT_ID).type(DEBIT).build());
+
+        when(cardService.getExistentCard(ACCOUNT_ID, CREDIT_ID))
+            .thenReturn(AccountCard.builder().id(CREDIT_ID).type(CREDIT).limit(new BigDecimal("100")).build());
 
         configureRepositoryMock(transactionTransferRepository);
         configureRepositoryMock(transactionRepository);
@@ -189,15 +191,15 @@ public class LedgerTest {
     }
 
     @Test
-    @DisplayName("given total withdrawal amount exceeds balance, when adding a withdrawal, should fail")
-    public void givenTotalWithdrawalAmountExceedsBalance_whenAddingAWithdrawal_shouldSaveDepositLedgerEntry() {
+    @DisplayName("given total withdrawal amount exceeds balance, when adding a withdrawal, should fail with UnderBalanceForAccount")
+    public void givenTotalWithdrawalAmountExceedsBalance_whenAddingAWithdrawal_shouldFail() {
         var sut = createLedger(new BigDecimal("0.5"));
 
         when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
             .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("12")).build()));
 
         assertThrows(
-            IllegalStateException.class,
+            UnderBalanceForAccount.class,
             () -> sut.withdraw(ACCOUNT_ID, new WithdrawalRequestDto(CREDIT_ID, new BigDecimal("10"))));
     }
 
@@ -288,15 +290,15 @@ public class LedgerTest {
     }
 
     @Test
-    @DisplayName("given total transfer amount exceeds balance, when adding a transfer, should fail")
-    public void givenTotalTransferAmountExceedsBalance_whenAddingAWithdrawal_shouldSaveDepositLedgerEntry() {
+    @DisplayName("given total transfer amount exceeds balance, when adding a transfer, should fail with UnderBalanceForAccount")
+    public void givenTotalTransferAmountExceedsBalance_whenAddingAWithdrawal_shouldFail() {
         var sut = createLedger(new BigDecimal("0.5"));
 
         when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
             .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("12")).build()));
 
         assertThrows(
-            IllegalStateException.class,
+            UnderBalanceForAccount.class,
             () -> sut.transfer(ACCOUNT_ID, new TransferRequestDto(ACCOUNT_ID_2, CREDIT_ID, new BigDecimal("10"))));
     }
 

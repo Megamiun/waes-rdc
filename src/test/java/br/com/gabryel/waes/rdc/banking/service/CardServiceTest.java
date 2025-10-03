@@ -4,6 +4,8 @@ import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateCardRequestD
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountCard;
 import br.com.gabryel.waes.rdc.banking.model.entity.CardType;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.NonExistentCardForAccount;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.RepeatedCardTypeForAccount;
 import br.com.gabryel.waes.rdc.banking.repository.CardRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +32,7 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class AccountCardServiceTest {
+public class CardServiceTest {
     private final static UUID DEFAULT_ACCOUNT_ID = UUID.randomUUID();
 
     @Mock(strictness = LENIENT)
@@ -103,14 +105,24 @@ public class AccountCardServiceTest {
     }
 
     @Test
-    @DisplayName("given card with type already exists, when adding a card, should fail")
+    @DisplayName("given card with type already exists, when adding a card, should fail with RepeatedCardTypeForAccount")
     public void givenCardWithTypeAlreadyExists_whenAddingACard_shouldFail() {
         var sut = new CardService(accountService, cardRepository, new BigDecimal("2000"));
 
         when(cardRepository.existsByAccountIdAndType(DEFAULT_ACCOUNT_ID, DEBIT)).thenReturn(true);
 
         assertThrows(
-            IllegalStateException.class,
+            RepeatedCardTypeForAccount.class,
             () -> sut.requestCard(DEFAULT_ACCOUNT_ID, new CreateCardRequestDto(DEBIT, "")));
+    }
+
+    @Test
+    @DisplayName("given card not associated with account, when fetching an existing card, should fail with NonExistentCardForAccount")
+    public void givenCardNotAssociatedWithAccount_whenFetchingAnExistingCard_shouldFail() {
+        var sut = new CardService(accountService, cardRepository, new BigDecimal("2000"));
+
+        assertThrows(
+            NonExistentCardForAccount.class,
+            () -> sut.getExistentCard(DEFAULT_ACCOUNT_ID, UUID.randomUUID()));
     }
 }

@@ -3,6 +3,9 @@ package br.com.gabryel.waes.rdc.banking.service;
 import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateCardRequestDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountCard;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.CannotCreateUniqueCardPan;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.NonExistentCardForAccount;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.RepeatedCardTypeForAccount;
 import br.com.gabryel.waes.rdc.banking.repository.CardRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -20,6 +23,7 @@ import static br.com.gabryel.waes.rdc.banking.model.entity.CardType.CREDIT;
 
 @Service
 public class CardService {
+    private final int retries = 1000;
     private static final String IIN = "55";
     private static final List<Character> numericCharacters =
         List.of('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
@@ -44,7 +48,7 @@ public class CardService {
         var account = accountService.findExistingAccount(accountId);
 
         if (cardRepository.existsByAccountIdAndType(accountId, request.type()))
-            throw new IllegalStateException("Card with type " + request.type() + " already exists for account with id " + accountId);
+            throw new RepeatedCardTypeForAccount(accountId, request.type());
 
         return cardRepository.save(createCard(account, request));
     }
@@ -53,6 +57,12 @@ public class CardService {
         var account = accountService.findExistingAccount(accountId);
 
         return cardRepository.findByAccountId(account.getId(), Pageable.unpaged());
+    }
+    public AccountCard getExistentCard(UUID accountId, UUID cardId) {
+        var card = cardRepository.findByAccountIdAndId(accountId, cardId);
+        if (card == null) throw new NonExistentCardForAccount(accountId, cardId);
+
+        return card;
     }
 
     private AccountCard createCard(Account account, CreateCardRequestDto request) {
@@ -77,10 +87,10 @@ public class CardService {
 
     private String generateUniqueCreditCardNumber() {
         return Stream.iterate(generateRandomNumbers(IIN, 19), prev -> generateRandomNumbers(IIN, 19))
-            .limit(1000)
+            .limit(retries)
             .filter(pan -> !cardRepository.existsByPan(pan))
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("Failure finding unique credit card pan over 10000 tries. Will fail."));
+            .orElseThrow(() -> new CannotCreateUniqueCardPan(retries));
     }
 
     private static String generateRandomNumbers(String prefix, int size) {

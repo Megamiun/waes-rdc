@@ -5,6 +5,9 @@ import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateAccountReque
 import br.com.gabryel.waes.rdc.banking.model.entity.Account;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountDocument;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.DocumentType;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.MissingPrimaryDocument;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.NonExistentAccount;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.RepeatedPrimaryDocument;
 import br.com.gabryel.waes.rdc.banking.repository.AccountDocumentRepository;
 import br.com.gabryel.waes.rdc.banking.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,10 +43,10 @@ public class AccountService {
         var primaryDocument = request.documents().stream()
             .filter(doc -> doc.documentType() == primaryDocumentType)
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("Document of type " + primaryDocumentType + " not found"));
+            .orElseThrow(() -> new MissingPrimaryDocument(primaryDocumentType));
 
         if (accountDocumentRepository.existsByTypeAndNumber(primaryDocumentType, primaryDocument.documentNumber()))
-            throw new IllegalStateException("Document of type " + primaryDocumentType + " with given number already exists");
+            throw new RepeatedPrimaryDocument(primaryDocumentType);
 
         var account = accountRepository.save(map(request));
         saveDocuments(account, request.documents());
@@ -61,7 +64,7 @@ public class AccountService {
 
     public Account findExistingAccount(UUID accountId) {
         return accountRepository.findById(accountId)
-            .orElseThrow(() -> new IllegalArgumentException("Account with id " + accountId + " not found"));
+            .orElseThrow(() -> new NonExistentAccount(accountId));
     }
 
     public List<AccountDocument> getAccountDocuments(UUID accountId) {

@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface CardRepository extends JpaRepository<AccountCard, UUID> {
+    AccountCard findByAccountIdAndId(UUID accountId, UUID id);
     Page<AccountCard> findByAccountId(UUID accountId, Pageable pageable);
     boolean existsByAccountIdAndType(UUID accountId, CardType type);
     boolean existsByPan(String pan);
