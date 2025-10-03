@@ -1,7 +1,9 @@
 package br.com.gabryel.waes.rdc.banking.controller;
 
-import br.com.gabryel.waes.rdc.banking.controller.dto.*;
-import br.com.gabryel.waes.rdc.banking.controller.dto.request.*;
+import br.com.gabryel.waes.rdc.banking.controller.dto.TransactionDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.DepositRequestDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.TransferRequestDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.WithdrawalRequestDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.Transaction;
 import br.com.gabryel.waes.rdc.banking.service.Ledger;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,7 @@ public class AccountTransactionsController {
     // Created out of spec, for simplicity/testing
     @GetMapping("/{transactionId}")
     public TransactionDto getTransaction(@PathVariable("accountId") UUID accountId, @PathVariable("transactionId") UUID transactionId) {
-        throw new UnsupportedOperationException("TODO Get transaction  " + transactionId);
+        return mapToDto(ledger.getTransaction(accountId, transactionId));
     }
 
     @PutMapping("/deposits")

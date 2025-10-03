@@ -1,0 +1,1055 @@
+{
+	"info": {
+		"_postman_id": "3be2e75c-93c6-472e-a9c5-6d40ef5761b1",
+		"name": "RDC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2748872"
+	},
+	"item": [
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "Create account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 201) {",
+									"    pm.environment.set('prevAccountId', pm.environment.get('accountId'))",
+									"    pm.environment.set('accountId', pm.response.json().accountId)",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Gabryel\",\n  \"surname\": \"Monteiro\",\n  \"documents\": [\n    {\n      \"documentType\": \"PASSPORT\",\n      \"documentNumber\": \"123456789\"\n    },\n    {\n      \"documentType\": \"BSN\",\n      \"documentNumber\": \"987654321\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"string\",\n  \"surname\": \"string\",\n  \"documents\": [\n    {\n      \"documentType\": \"PASSPORT\",\n      \"documentNumber\": \"string\"\n    },\n    {\n      \"documentType\": \"BSN\",\n      \"documentNumber\": \"string\"\n    }\n  ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/accounts",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"accountId\": \"de39508b-3123-cbe9-8ae6-35760e7b7b25\",\n  \"name\": \"string\",\n  \"surname\": \"string\",\n  \"documents\": [\n    {\n      \"documentType\": \"BSN\",\n      \"documentNumber\": \"string\"\n    },\n    {\n      \"documentType\": \"PASSPORT\",\n      \"documentNumber\": \"string\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get account",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"accountId\": \"de39508b-3123-cbe9-8ae6-35760e7b7b25\",\n  \"name\": \"string\",\n  \"surname\": \"string\",\n  \"documents\": [\n    {\n      \"documentType\": \"BSN\",\n      \"documentNumber\": \"string\"\n    },\n    {\n      \"documentType\": \"PASSPORT\",\n      \"documentNumber\": \"string\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get balance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:accountId/balance",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":accountId",
+								"balance"
+							],
+							"variable": [
+								{
+									"key": "accountId",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:accountId/balance",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":accountId",
+										"balance"
+									],
+									"variable": [
+										{
+											"key": "accountId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"amount\": 9111.405690773807\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get global transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/transactions?accountIds={{accountId}}&types=WITHDRAWAL,DEPOSIT,TRANSFER",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "accountIds",
+									"value": "{{accountId}}"
+								},
+								{
+									"key": "types",
+									"value": "WITHDRAWAL,DEPOSIT,TRANSFER"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/admin/transactions?accountIds=304265b1-95d8-8640-c813-8ddeedddca6e&accountIds=eb8a97a0-a082-6ff1-6302-2fe443212f8c&types=TRANSFER&types=WITHDRAWAL&pageSize=7223&pageNumber=7223",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"transactions"
+									],
+									"query": [
+										{
+											"key": "accountIds",
+											"value": "304265b1-95d8-8640-c813-8ddeedddca6e"
+										},
+										{
+											"key": "accountIds",
+											"value": "eb8a97a0-a082-6ff1-6302-2fe443212f8c"
+										},
+										{
+											"key": "types",
+											"value": "TRANSFER"
+										},
+										{
+											"key": "types",
+											"value": "WITHDRAWAL"
+										},
+										{
+											"key": "pageSize",
+											"value": "7223"
+										},
+										{
+											"key": "pageNumber",
+											"value": "7223"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"content\": [\n    {\n      \"ownerId\": \"fb732d6f-809c-aee9-f563-813e18729018\",\n      \"id\": \"d88c097a-439d-a21d-6a8d-42753ec7711f\",\n      \"status\": \"PENDING\",\n      \"amount\": 6085.2743494253245,\n      \"fee\": 7516.05070271475\n    },\n    {\n      \"ownerId\": \"ed3ee97b-200c-d1a1-6c5c-bec15ae0d990\",\n      \"id\": \"f75149dd-9765-4a2e-c972-80fe71786fa6\",\n      \"status\": \"PENDING\",\n      \"amount\": 4886.589896700004,\n      \"fee\": 1332.5249927263183\n    }\n  ],\n  \"pageNumber\": 7859,\n  \"pageSize\": 9090,\n  \"totalElements\": 3451\n}"
+						}
+					]
+				},
+				{
+					"name": "Get global account balances",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/balances?accountIds={{accountId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"balances"
+							],
+							"query": [
+								{
+									"key": "accountIds",
+									"value": "{{accountId}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/admin/balances?accountIds=304265b1-95d8-8640-c813-8ddeedddca6e&accountIds=eb8a97a0-a082-6ff1-6302-2fe443212f8c&pageSize=7223&pageNumber=7223",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"balances"
+									],
+									"query": [
+										{
+											"key": "accountIds",
+											"value": "304265b1-95d8-8640-c813-8ddeedddca6e"
+										},
+										{
+											"key": "accountIds",
+											"value": "eb8a97a0-a082-6ff1-6302-2fe443212f8c"
+										},
+										{
+											"key": "pageSize",
+											"value": "7223"
+										},
+										{
+											"key": "pageNumber",
+											"value": "7223"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"content\": [\n    {\n      \"id\": \"4708be47-759c-5d1f-6d13-633473a9ab6b\",\n      \"amount\": 6797.569745973222\n    },\n    {\n      \"id\": \"87f2da27-54f7-21e2-78b0-d979f7276791\",\n      \"amount\": 6825.137436141453\n    }\n  ],\n  \"pageNumber\": 2720,\n  \"pageSize\": 7603,\n  \"totalElements\": 6114\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "withdraw",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 201) {",
+									"    pm.environment.set('lastTransactionId', pm.response.json().id)",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cardId\": \"{{creditCardId}}\",\n  \"amount\": 10.50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:accountId/transactions/withdrawals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":accountId",
+								"transactions",
+								"withdrawals"
+							],
+							"variable": [
+								{
+									"key": "accountId",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"cardId\": \"888025df-6bec-8b1e-0602-06f7d172e798\",\n  \"amount\": 8038.605904958596\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:accountId/transactions/withdrawals",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":accountId",
+										"transactions",
+										"withdrawals"
+									],
+									"variable": [
+										{
+											"key": "accountId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"0fa4222b-543c-81c7-82f7-09a2c800a801\",\n  \"status\": \"FAILED\",\n  \"amount\": 5838.119215724851,\n  \"fee\": 4401.662482258002\n}"
+						}
+					]
+				},
+				{
+					"name": "transfer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 201) {",
+									"    pm.environment.set('lastTransactionId', pm.response.json().id)",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"receiverAccountId\": \"{{prevAccountId}}\",\n  \"cardId\": \"{{creditCardId}}\",\n  \"amount\": 10.50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:accountId/transactions/transfers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":accountId",
+								"transactions",
+								"transfers"
+							],
+							"variable": [
+								{
+									"key": "accountId",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"receiverAccountId\": \"f2a77092-2d90-3172-b85d-1af3a60408b4\",\n  \"cardId\": \"5e86db66-4156-887f-b039-1d6329fb55a2\",\n  \"amount\": 5318.211672125539\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:accountId/transactions/transfers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":accountId",
+										"transactions",
+										"transfers"
+									],
+									"variable": [
+										{
+											"key": "accountId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"0fa4222b-543c-81c7-82f7-09a2c800a801\",\n  \"status\": \"FAILED\",\n  \"amount\": 5838.119215724851,\n  \"fee\": 4401.662482258002\n}"
+						}
+					]
+				},
+				{
+					"name": "deposit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 201) {",
+									"    pm.environment.set('lastTransactionId', pm.response.json().id)",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 1000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:accountId/transactions/deposits",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":accountId",
+								"transactions",
+								"deposits"
+							],
+							"variable": [
+								{
+									"key": "accountId",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amount\": 9111.405690773807\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:accountId/transactions/deposits",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":accountId",
+										"transactions",
+										"deposits"
+									],
+									"variable": [
+										{
+											"key": "accountId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"0fa4222b-543c-81c7-82f7-09a2c800a801\",\n  \"status\": \"FAILED\",\n  \"amount\": 5838.119215724851,\n  \"fee\": 4401.662482258002\n}"
+						}
+					]
+				},
+				{
+					"name": "Get transaction",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:accountId/transactions/:transactionId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":accountId",
+								"transactions",
+								":transactionId"
+							],
+							"variable": [
+								{
+									"key": "accountId",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								},
+								{
+									"key": "transactionId",
+									"value": "{{lastTransactionId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:accountId/transactions/:transactionId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":accountId",
+										"transactions",
+										":transactionId"
+									],
+									"variable": [
+										{
+											"key": "accountId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										},
+										{
+											"key": "transactionId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"0fa4222b-543c-81c7-82f7-09a2c800a801\",\n  \"status\": \"FAILED\",\n  \"amount\": 5838.119215724851,\n  \"fee\": 4401.662482258002\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Cards",
+			"item": [
+				{
+					"name": "Get cards",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:accountId/cards",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":accountId",
+								"cards"
+							],
+							"variable": [
+								{
+									"key": "accountId",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:accountId/cards",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":accountId",
+										"cards"
+									],
+									"variable": [
+										{
+											"key": "accountId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"totalElements\": 6607,\n  \"totalPages\": 9590,\n  \"size\": 531,\n  \"content\": [\n    {\n      \"id\": \"152f8451-992f-6039-ae7e-cdc41163ff1a\",\n      \"type\": \"CREDIT\",\n      \"pan\": \"string\",\n      \"cvv\": \"string\",\n      \"expirationMonth\": 838,\n      \"expirationYear\": 1705,\n      \"limit\": 8690.523468562395\n    },\n    {\n      \"id\": \"f8b2360c-7b52-944e-861d-b0c6712c5db0\",\n      \"type\": \"DEBIT\",\n      \"pan\": \"string\",\n      \"cvv\": \"string\",\n      \"expirationMonth\": 3954,\n      \"expirationYear\": 3068,\n      \"limit\": 9104.42224622573\n    }\n  ],\n  \"number\": 6902,\n  \"pageable\": {\n    \"offset\": 2135,\n    \"paged\": false,\n    \"pageNumber\": 2422,\n    \"pageSize\": 6784,\n    \"sort\": {\n      \"empty\": false,\n      \"sorted\": true,\n      \"unsorted\": true\n    },\n    \"unpaged\": false\n  },\n  \"numberOfElements\": 2524,\n  \"sort\": {\n    \"empty\": true,\n    \"sorted\": false,\n    \"unsorted\": true\n  },\n  \"first\": false,\n  \"last\": true,\n  \"empty\": true\n}"
+						}
+					]
+				},
+				{
+					"name": "Request card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 201) {",
+									"    if (pm.response.json().type == \"CREDIT\")",
+									"        pm.environment.set('creditCardId', pm.response.json().id)",
+									"    else",
+									"        pm.environment.set('debitCardId', pm.response.json().id)   ",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"CREDIT\",\n  \"holderName\": \"Gabs Monteiro\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/accounts/:accountId/cards",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"accounts",
+								":accountId",
+								"cards"
+							],
+							"variable": [
+								{
+									"key": "accountId",
+									"value": "{{accountId}}",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"type\": \"DEBIT\",\n  \"holderName\": \"string\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/accounts/:accountId/cards",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"accounts",
+										":accountId",
+										"cards"
+									],
+									"variable": [
+										{
+											"key": "accountId",
+											"value": "231f2c02-99ac-8c59-fd4b-3e820f768ad8",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"c95c30e7-5b15-c879-63e8-06791b18e27f\",\n  \"type\": \"CREDIT\",\n  \"pan\": \"string\",\n  \"cvv\": \"string\",\n  \"expirationMonth\": 2072,\n  \"expirationYear\": 7296,\n  \"limit\": 713.853980885244\n}"
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

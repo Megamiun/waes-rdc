@@ -6,6 +6,7 @@ import br.com.gabryel.waes.rdc.banking.model.entity.*;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionMethod;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
+import br.com.gabryel.waes.rdc.banking.model.exceptions.NonExistentTransactionForAccount;
 import br.com.gabryel.waes.rdc.banking.model.exceptions.UnderBalanceForAccount;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static br.com.gabryel.waes.rdc.banking.helper.NullUtils.firstNonNull;
+import static br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType.*;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionMethod.ATM;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus.COMPLETED;
 import static java.math.BigDecimal.ZERO;
@@ -64,7 +66,7 @@ public class Ledger {
     public Transaction deposit(UUID accountId, BigDecimal amount) {
         var account = accountService.findExistingAccount(accountId);
         var transaction = transactionRepository.save(
-            createTransaction(account, amount, TransactionType.DEPOSIT, ATM, null, ZERO));
+            createTransactionEntity(account, amount, TransactionType.DEPOSIT, ATM, null, ZERO));
 
         ledgerEntryRepository.save(createLedgerEntry(account, transaction, amount, LedgerEntryType.DEPOSIT));
 
@@ -79,24 +81,26 @@ public class Ledger {
         ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), LedgerEntryType.WITHDRAWAL));
 
         if (!transaction.getFeeAmount().equals(ZERO))
-            ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), LedgerEntryType.FEE));
+            ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), FEE));
 
         return transaction;
     }
 
+    @Transactional
     public Transaction transfer(UUID accountId, TransferRequestDto request) {
         var account = accountService.findExistingAccount(accountId);
         var receiverAccount = accountService.findExistingAccount(request.receiverAccountId());
 
         var transaction = createTransaction(account, TransactionType.TRANSFER, request.cardId(), request.amount());
 
-        transactionTransferRepository.save(new TransactionTransfer(transaction.getId(), transaction, receiverAccount));
+        var transfer = TransactionTransfer.builder().transaction(transaction).receiver(receiverAccount).build();
+        transactionTransferRepository.save(transfer);
 
-        ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), LedgerEntryType.TRANSFER_SENT));
-        ledgerEntryRepository.save(createLedgerEntry(receiverAccount, transaction, request.amount(), LedgerEntryType.TRANSFER_RECEIVED));
+        ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), TRANSFER_SENT));
+        ledgerEntryRepository.save(createLedgerEntry(receiverAccount, transaction, request.amount(), TRANSFER_RECEIVED));
 
         if (!transaction.getFeeAmount().equals(ZERO))
-            ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), LedgerEntryType.FEE));
+            ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), FEE));
 
         return transaction;
     }
@@ -110,7 +114,7 @@ public class Ledger {
         validateBalance(accountId, amount, fee);
 
         return transactionRepository.save(
-            createTransaction(
+            createTransactionEntity(
                 account,
                 amount,
                 transactionType,
@@ -133,6 +137,11 @@ public class Ledger {
         return page.map(accountId -> Pair.of(
             accountId,
             getBalance(entries.getOrDefault(accountId, List.of()))));
+    }
+
+    public Transaction getTransaction(UUID accountId, UUID transactionId) {
+        return transactionRepository.findByOwnerIdAndId(accountId, transactionId)
+            .orElseThrow(() -> new NonExistentTransactionForAccount(accountId, transactionId));
     }
 
     public Page<Transaction> getTransactions(List<UUID> accountIds, List<TransactionType> types, Integer pageSize, Integer pageNumber) {
@@ -186,7 +195,7 @@ public class Ledger {
             .build();
     }
 
-    private static Transaction createTransaction(
+    private static Transaction createTransactionEntity(
         Account account,
         BigDecimal amount,
         TransactionType type,

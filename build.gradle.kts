@@ -25,6 +25,8 @@ sourceSets {
 }
 
 dependencies {
+    val lombokVersion = "1.18.42"
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
@@ -35,8 +37,8 @@ dependencies {
 
     runtimeOnly("me.paulschwarz:spring-dotenv:4.0.0")
 
-    implementation("org.projectlombok:lombok:1.18.42")
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    implementation("org.projectlombok:lombok:$lombokVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
 
     // Test
     testImplementation(platform("org.junit:junit-bom:6.0.0"))

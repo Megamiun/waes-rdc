@@ -1,6 +1,7 @@
 package br.com.gabryel.waes.rdc.banking.controller;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.CardDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.PageDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.request.CreateCardRequestDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.AccountCard;
 import br.com.gabryel.waes.rdc.banking.service.CardService;
@@ -20,18 +21,18 @@ public class AccountCardsController {
     private final CardService cardService;
 
     // Created out of spec, for simplicity/testing
-    @PutMapping("/{id}/cards")
-    public ResponseEntity<CardDto> requestCard(@PathVariable("id") UUID id, @RequestBody CreateCardRequestDto request) {
-        var card = cardService.requestCard(id, request);
+    @PutMapping
+    public ResponseEntity<CardDto> requestCard(@PathVariable("accountId") UUID accountId, @RequestBody CreateCardRequestDto request) {
+        var card = cardService.requestCard(accountId, request);
 
         return ResponseEntity
-            .created(URI.create("/accounts/" + id + "/cards/" + card.getId()))
+            .created(URI.create("/accounts/" + accountId + "/cards/" + card.getId()))
             .body(mapToDto(card));
     }
 
-    @GetMapping("/{id}/cards")
-    public Page<CardDto> getCards(@PathVariable("id") UUID id) {
-        return cardService.getCards(id).map(AccountCardsController::mapToDto);
+    @GetMapping
+    public PageDto<CardDto> getCards(@PathVariable("accountId") UUID accountId) {
+        return PageDto.of(cardService.getCards(accountId)).map(AccountCardsController::mapToDto);
     }
 
     private static CardDto mapToDto(AccountCard card) {

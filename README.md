@@ -91,3 +91,4 @@ http://localhost:8080/swagger-ui/index.html
 ## Not implemented
 - /account/{accountId}/cards/{cardId} will not be implemented
 - Address removed, on basis of priority
+- Contract first API, on simplicity basis

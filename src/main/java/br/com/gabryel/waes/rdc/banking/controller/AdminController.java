@@ -6,7 +6,6 @@ import br.com.gabryel.waes.rdc.banking.controller.dto.PageDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
 import br.com.gabryel.waes.rdc.banking.service.Ledger;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

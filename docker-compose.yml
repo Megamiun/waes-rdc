@@ -4,7 +4,7 @@ services:
     ports:
       - "8080:8080"
     working_dir: /app
-    command: ["./gradlew", "bootRun"]
+    command: ["./gradlew", "bootRun", "--no-daemon"]
     environment:
       DB_URL: jdbc:postgresql://db:5432/rdc
       DB_USERNAME: rdc_user
