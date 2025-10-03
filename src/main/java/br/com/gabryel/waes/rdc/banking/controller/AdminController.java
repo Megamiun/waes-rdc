@@ -2,6 +2,7 @@ package br.com.gabryel.waes.rdc.banking.controller;
 
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountBalanceDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.AccountTransactionDto;
+import br.com.gabryel.waes.rdc.banking.controller.dto.PageDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
 import br.com.gabryel.waes.rdc.banking.service.Ledger;
 import lombok.RequiredArgsConstructor;
@@ -23,24 +24,24 @@ public class AdminController {
 
     // In-spec methods
     @GetMapping("/balances")
-    public Page<AccountBalanceDto> getAccountBalance(
+    public PageDto<AccountBalanceDto> getAccountBalance(
         @RequestParam(value = "accountIds", required = false) List<UUID> accountIds,
         @RequestParam(required = false) Integer pageSize,
         @RequestParam(required = false) Integer pageNumber
     ) {
-        return ledger.getBalances(accountIds, pageSize, pageNumber).map(accountToBalance ->
+        return PageDto.of(ledger.getBalances(accountIds, pageSize, pageNumber)).map(accountToBalance ->
             new AccountBalanceDto(accountToBalance.getFirst(), accountToBalance.getSecond()));
     }
 
     // In-spec methods
     @GetMapping("/transactions")
-    public Page<AccountTransactionDto> getTransactions(
+    public PageDto<AccountTransactionDto> getTransactions(
         @RequestParam(value = "accountIds", required = false) List<UUID> accountIds,
         @RequestParam(value = "types", required = false) List<TransactionType> types,
         @RequestParam(required = false) Integer pageSize,
         @RequestParam(required = false) Integer pageNumber
     ) {
-        return ledger.getTransactions(accountIds, types, pageSize, pageNumber).map(t ->
+        return PageDto.of(ledger.getTransactions(accountIds, types, pageSize, pageNumber)).map(t ->
             new AccountTransactionDto(t.getOwner().getId(), t.getId(), t.getStatus(), t.getAmount(), t.getFeeAmount()));
     }
 }
