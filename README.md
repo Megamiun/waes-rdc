@@ -22,6 +22,36 @@
 - [x] Feel free to make some assumptions if needed & mention them in the code assignment
 - [ ] Good to have: Deploy this service somewhere (AWS/Azure) or deploy locally
 
+## Running
+
+### Docker Compose
+To run, you just need to use the command:
+
+```sh
+docker compose up
+```
+
+### Terminal
+Considering you already have a Postgres instance running, you may also:
+
+```sh
+# 1. Copy .env.sample to .env
+cp .env.sample .env
+
+# 2. Modify needed variables. Available variables:
+# DB_URL=jdbc:postgresql://localhost:5432/rdc
+# DB_USERNAME=rdc_user
+# DB_PASSWORD=rdc_password
+# SERVER_PORT=8080
+
+# 3. Run server
+./gradlew bootRun 
+```
+
+## API
+To have access to APIs, see:
+http://localhost:8080/swagger-ui/index.html
+
 ## Assumptions/Choices
 - [x] Account can also be generated via endpoint, asking for user information on generation:
   - [x] If a BSN is non duplicated, the account will be created

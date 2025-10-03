@@ -27,12 +27,13 @@ sourceSets {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    runtimeOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
 
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql:42.7.3")
 
-    implementation("me.paulschwarz:spring-dotenv:4.0.0")
+    runtimeOnly("me.paulschwarz:spring-dotenv:4.0.0")
 
     implementation("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
