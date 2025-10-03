@@ -35,8 +35,12 @@ public class AccountTransactionsController {
 
     // In-spec methods
     @PutMapping("/transfers")
-    public Boolean transfer(@PathVariable("accountId") UUID accountId, @RequestBody TransferRequestDto request) {
-        throw new UnsupportedOperationException("TODO Transfer amount from " + accountId);
+    public ResponseEntity<TransactionDto> transfer(@PathVariable("accountId") UUID accountId, @RequestBody TransferRequestDto request) {
+        var transaction = ledger.transfer(accountId, request);
+
+        return ResponseEntity
+            .created(URI.create("/accounts/" + accountId + "/transactions/" + transaction.getId()))
+            .body(mapToDto(transaction));
     }
 
     @PutMapping("/withdrawals")

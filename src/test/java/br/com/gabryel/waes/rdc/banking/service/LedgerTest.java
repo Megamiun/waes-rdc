@@ -1,15 +1,14 @@
 package br.com.gabryel.waes.rdc.banking.service;
 
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.TransferRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.request.WithdrawalRequestDto;
-import br.com.gabryel.waes.rdc.banking.model.entity.Account;
-import br.com.gabryel.waes.rdc.banking.model.entity.AccountCard;
-import br.com.gabryel.waes.rdc.banking.model.entity.LedgerEntry;
-import br.com.gabryel.waes.rdc.banking.model.entity.Transaction;
+import br.com.gabryel.waes.rdc.banking.model.entity.*;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
+import br.com.gabryel.waes.rdc.banking.repository.TransactionTransferRepository;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,9 +43,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LedgerTest {
-    private final static UUID DEFAULT_ACCOUNT_ID = UUID.randomUUID();
-    private final static UUID DEFAULT_DEBIT_ID = UUID.randomUUID();
-    private final static UUID DEFAULT_CREDIT_ID = UUID.randomUUID();
+    private final static UUID ACCOUNT_ID = UUID.randomUUID();
+    private final static UUID ACCOUNT_ID_2 = UUID.randomUUID();
+    private final static UUID DEBIT_ID = UUID.randomUUID();
+    private final static UUID CREDIT_ID = UUID.randomUUID();
 
     @Mock(strictness = LENIENT)
     private CardService cardService;
@@ -60,16 +60,23 @@ public class LedgerTest {
     @Mock(strictness = LENIENT)
     private TransactionRepository transactionRepository;
 
+    @Mock(strictness = LENIENT)
+    private TransactionTransferRepository transactionTransferRepository;
+
     @BeforeEach
     void setUp() {
-        when(accountService.findExistingAccount(DEFAULT_ACCOUNT_ID))
-            .thenReturn(Account.builder().id(DEFAULT_ACCOUNT_ID).build());
+        when(accountService.findExistingAccount(ACCOUNT_ID))
+            .thenReturn(Account.builder().id(ACCOUNT_ID).build());
 
-        when(cardService.getCards(DEFAULT_ACCOUNT_ID)).thenReturn(new PageImpl<>(List.of(
-            AccountCard.builder().id(DEFAULT_DEBIT_ID).type(DEBIT).build(),
-            AccountCard.builder().id(DEFAULT_CREDIT_ID).type(CREDIT).limit(new BigDecimal("100")).build()
+        when(accountService.findExistingAccount(ACCOUNT_ID_2))
+            .thenReturn(Account.builder().id(ACCOUNT_ID_2).build());
+
+        when(cardService.getCards(ACCOUNT_ID)).thenReturn(new PageImpl<>(List.of(
+            AccountCard.builder().id(DEBIT_ID).type(DEBIT).build(),
+            AccountCard.builder().id(CREDIT_ID).type(CREDIT).limit(new BigDecimal("100")).build()
         )));
 
+        configureRepositoryMock(transactionTransferRepository);
         configureRepositoryMock(transactionRepository);
         configureRepositoryMock(ledgerEntryRepository);
     }
@@ -77,134 +84,233 @@ public class LedgerTest {
     @Test
     @DisplayName("when adding a deposit, should return a transaction")
     public void whenAddingADeposit_shouldReturnTransaction() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
         assertThat(
-            sut.deposit(DEFAULT_ACCOUNT_ID, new BigDecimal("123.45")),
-            is(dbTransactionWith(DEFAULT_ACCOUNT_ID, TransactionType.DEPOSIT, COMPLETED, 123.45, 0)));
+            sut.deposit(ACCOUNT_ID, new BigDecimal("123.45")),
+            is(dbTransactionWith(ACCOUNT_ID, TransactionType.DEPOSIT, COMPLETED, 123.45, 0)));
     }
 
     @Test
     @DisplayName("when adding a deposit, should save a completed Transaction")
     public void whenAddingADeposit_shouldSaveACompletedTransaction() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
-        sut.deposit(DEFAULT_ACCOUNT_ID, new BigDecimal("123.45"));
+        sut.deposit(ACCOUNT_ID, new BigDecimal("123.45"));
 
         ArgumentCaptor<Transaction> accountCaptor = captor();
         verify(transactionRepository).save(accountCaptor.capture());
 
         assertThat(
             accountCaptor.getValue(),
-            is(dbTransactionWith(DEFAULT_ACCOUNT_ID, TransactionType.DEPOSIT, COMPLETED, 123.45, 0)));
+            is(dbTransactionWith(ACCOUNT_ID, TransactionType.DEPOSIT, COMPLETED, 123.45, 0)));
     }
 
     @Test
     @DisplayName("when adding a deposit, should save deposit LedgerEntry")
     public void whenAddingADeposit_shouldSaveDepositLedgerEntry() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
-        sut.deposit(DEFAULT_ACCOUNT_ID, new BigDecimal("123.45"));
+        sut.deposit(ACCOUNT_ID, new BigDecimal("123.45"));
 
         ArgumentCaptor<LedgerEntry> accountCaptor = captor();
         verify(ledgerEntryRepository).save(accountCaptor.capture());
 
         assertThat(
             accountCaptor.getValue(),
-            is(dbLedgerEntryWith(LedgerEntryType.DEPOSIT, DEFAULT_ACCOUNT_ID, 123.45)));
+            is(dbLedgerEntryWith(LedgerEntryType.DEPOSIT, ACCOUNT_ID, 123.45)));
     }
 
     @Test
     @DisplayName("when adding a withdrawal, should return a transaction")
     public void whenAddingAWithdrawal_shouldReturnTransaction() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
-        when(ledgerEntryRepository.findByAccountId(DEFAULT_ACCOUNT_ID))
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
             .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
 
         assertThat(
-            sut.withdraw(DEFAULT_ACCOUNT_ID, new WithdrawalRequestDto(DEFAULT_DEBIT_ID, new BigDecimal("10"))),
-            is(dbTransactionWith(DEFAULT_ACCOUNT_ID, TransactionType.WITHDRAWAL, COMPLETED, 10, 0)));
+            sut.withdraw(ACCOUNT_ID, new WithdrawalRequestDto(DEBIT_ID, new BigDecimal("10"))),
+            is(dbTransactionWith(ACCOUNT_ID, TransactionType.WITHDRAWAL, COMPLETED, 10, 0)));
     }
 
     @Test
     @DisplayName("when adding a withdrawal, should save a completed Transaction")
     public void whenAddingAWithdrawal_shouldSaveACompletedTransaction() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
-        when(ledgerEntryRepository.findByAccountId(DEFAULT_ACCOUNT_ID))
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
             .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
 
-        sut.withdraw(DEFAULT_ACCOUNT_ID, new WithdrawalRequestDto(DEFAULT_DEBIT_ID, new BigDecimal("10")));
+        sut.withdraw(ACCOUNT_ID, new WithdrawalRequestDto(DEBIT_ID, new BigDecimal("10")));
 
         ArgumentCaptor<Transaction> accountCaptor = captor();
         verify(transactionRepository).save(accountCaptor.capture());
 
         assertThat(
-            accountCaptor.getAllValues().getLast(),
-            is(dbTransactionWith(DEFAULT_ACCOUNT_ID, TransactionType.WITHDRAWAL, COMPLETED, 10, 0)));
+            accountCaptor.getAllValues(),
+            contains(dbTransactionWith(ACCOUNT_ID, TransactionType.WITHDRAWAL, COMPLETED, 10, 0)));
     }
 
     @Test
     @DisplayName("when adding a withdrawal, should save withdrawal LedgerEntry")
     public void whenAddingAWithdrawal_shouldSaveWithdrawalLedgerEntry() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
-        when(ledgerEntryRepository.findByAccountId(DEFAULT_ACCOUNT_ID))
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
             .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
 
-        sut.withdraw(DEFAULT_ACCOUNT_ID, new WithdrawalRequestDto(DEFAULT_DEBIT_ID, new BigDecimal("10")));
+        sut.withdraw(ACCOUNT_ID, new WithdrawalRequestDto(DEBIT_ID, new BigDecimal("10")));
 
         ArgumentCaptor<LedgerEntry> accountCaptor = captor();
         verify(ledgerEntryRepository).save(accountCaptor.capture());
 
         assertThat(
             accountCaptor.getAllValues().getLast(),
-            is(dbLedgerEntryWith(LedgerEntryType.WITHDRAWAL, DEFAULT_ACCOUNT_ID, -10)));
+            is(dbLedgerEntryWith(LedgerEntryType.WITHDRAWAL, ACCOUNT_ID, -10)));
     }
 
     @Test
     @DisplayName("given withdrawal is done via credit, when adding a withdrawal, should save fee LedgerEntry")
     public void givenWithdrawalIsDoneViaCredit_whenAddingAWithdrawal_shouldSaveFeeLedgerEntry() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
-        when(ledgerEntryRepository.findByAccountId(DEFAULT_ACCOUNT_ID))
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
             .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
 
-        sut.withdraw(DEFAULT_ACCOUNT_ID, new WithdrawalRequestDto(DEFAULT_CREDIT_ID, new BigDecimal("10")));
+        sut.withdraw(ACCOUNT_ID, new WithdrawalRequestDto(CREDIT_ID, new BigDecimal("10")));
 
         ArgumentCaptor<LedgerEntry> accountCaptor = captor();
         verify(ledgerEntryRepository, times(2)).save(accountCaptor.capture());
 
         assertThat(accountCaptor.getAllValues(), contains(
-            dbLedgerEntryWith(LedgerEntryType.WITHDRAWAL, DEFAULT_ACCOUNT_ID, -10),
-            dbLedgerEntryWith(LedgerEntryType.FEE, DEFAULT_ACCOUNT_ID, -0.1)));
+            dbLedgerEntryWith(LedgerEntryType.WITHDRAWAL, ACCOUNT_ID, -10),
+            dbLedgerEntryWith(LedgerEntryType.FEE, ACCOUNT_ID, -0.1)));
     }
 
     @Test
     @DisplayName("given total withdrawal amount exceeds balance, when adding a withdrawal, should fail")
     public void givenTotalWithdrawalAmountExceedsBalance_whenAddingAWithdrawal_shouldSaveDepositLedgerEntry() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.5"));
+        var sut = createLedger(new BigDecimal("0.5"));
 
-        when(ledgerEntryRepository.findByAccountId(DEFAULT_ACCOUNT_ID))
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
             .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("12")).build()));
 
         assertThrows(
             IllegalStateException.class,
-            () -> sut.withdraw(DEFAULT_ACCOUNT_ID, new WithdrawalRequestDto(DEFAULT_CREDIT_ID, new BigDecimal("10"))));
+            () -> sut.withdraw(ACCOUNT_ID, new WithdrawalRequestDto(CREDIT_ID, new BigDecimal("10"))));
+    }
+
+    @Test
+    @DisplayName("when adding a transfer, should return a transaction")
+    public void whenAddingATransfer_shouldReturnTransaction() {
+        var sut = createLedger(new BigDecimal("0.01"));
+
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
+            .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
+
+        assertThat(
+            sut.transfer(ACCOUNT_ID, new TransferRequestDto(ACCOUNT_ID_2, DEBIT_ID, new BigDecimal("10"))),
+            is(dbTransactionWith(ACCOUNT_ID, TransactionType.TRANSFER, COMPLETED, 10, 0)));
+    }
+
+    @Test
+    @DisplayName("when adding a transfer, should save a completed Transaction")
+    public void whenAddingATransfer_shouldSaveACompletedTransaction() {
+        var sut = createLedger(new BigDecimal("0.01"));
+
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
+            .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
+
+        sut.transfer(ACCOUNT_ID, new TransferRequestDto(ACCOUNT_ID_2, DEBIT_ID, new BigDecimal("10")));
+
+        ArgumentCaptor<Transaction> accountCaptor = captor();
+        verify(transactionRepository).save(accountCaptor.capture());
+
+        assertThat(
+            accountCaptor.getAllValues(),
+            contains(dbTransactionWith(ACCOUNT_ID, TransactionType.TRANSFER, COMPLETED, 10, 0)));
+    }
+
+    @Test
+    @DisplayName("when adding a transfer, should save a TransactionTransfer")
+    public void whenAddingATransfer_shouldSaveACompletedTransactionTransfer() {
+        var sut = createLedger(new BigDecimal("0.01"));
+
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
+            .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
+
+        sut.transfer(ACCOUNT_ID, new TransferRequestDto(ACCOUNT_ID_2, DEBIT_ID, new BigDecimal("10")));
+
+        ArgumentCaptor<TransactionTransfer> accountCaptor = captor();
+        verify(transactionTransferRepository).save(accountCaptor.capture());
+
+        assertThat(
+            accountCaptor.getAllValues(),
+            contains(hasFeature("receiverId", transfer -> transfer.getReceiver().getId(), equalTo(ACCOUNT_ID_2))));
+    }
+
+    @Test
+    @DisplayName("when adding a transfer, should save transfer LedgerEntry")
+    public void whenAddingATransfer_shouldSaveTransferLedgerEntry() {
+        var sut = createLedger(new BigDecimal("0.01"));
+
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
+            .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
+
+        sut.transfer(ACCOUNT_ID, new TransferRequestDto(ACCOUNT_ID_2, DEBIT_ID, new BigDecimal("10")));
+
+        ArgumentCaptor<LedgerEntry> accountCaptor = captor();
+        verify(ledgerEntryRepository, times(2)).save(accountCaptor.capture());
+
+        assertThat(accountCaptor.getAllValues(), contains(
+            dbLedgerEntryWith(LedgerEntryType.TRANSFER_SENT, ACCOUNT_ID, -10),
+            dbLedgerEntryWith(LedgerEntryType.TRANSFER_RECEIVED, ACCOUNT_ID_2, 10)));
+    }
+
+    @Test
+    @DisplayName("given transfer is done via credit, when adding a transfer, should save fee LedgerEntry")
+    public void givenTransferIsDoneViaCredit_whenAddingAWithdrawal_shouldSaveFeeLedgerEntry() {
+        var sut = createLedger(new BigDecimal("0.01"));
+
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
+            .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("100")).build()));
+
+        sut.transfer(ACCOUNT_ID, new TransferRequestDto(ACCOUNT_ID_2, CREDIT_ID, new BigDecimal("10")));
+
+        ArgumentCaptor<LedgerEntry> accountCaptor = captor();
+        verify(ledgerEntryRepository, times(3)).save(accountCaptor.capture());
+
+        assertThat(accountCaptor.getAllValues(), contains(
+            dbLedgerEntryWith(LedgerEntryType.TRANSFER_SENT, ACCOUNT_ID, -10),
+            dbLedgerEntryWith(LedgerEntryType.TRANSFER_RECEIVED, ACCOUNT_ID_2, 10),
+            dbLedgerEntryWith(LedgerEntryType.FEE, ACCOUNT_ID, -0.1)));
+    }
+
+    @Test
+    @DisplayName("given total transfer amount exceeds balance, when adding a transfer, should fail")
+    public void givenTotalTransferAmountExceedsBalance_whenAddingAWithdrawal_shouldSaveDepositLedgerEntry() {
+        var sut = createLedger(new BigDecimal("0.5"));
+
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID))
+            .thenReturn(List.of(LedgerEntry.builder().amount(new BigDecimal("12")).build()));
+
+        assertThrows(
+            IllegalStateException.class,
+            () -> sut.transfer(ACCOUNT_ID, new TransferRequestDto(ACCOUNT_ID_2, CREDIT_ID, new BigDecimal("10"))));
     }
 
     @Test
     @DisplayName("when getting an account balance, should sum together all ledger items")
     public void whenGettingAnAccountBalance_shouldSumTogetherAllLedgerItems() {
-        when(ledgerEntryRepository.findByAccountId(DEFAULT_ACCOUNT_ID)).thenReturn(List.of(
-            ledgerEntryWithAmount(DEFAULT_ACCOUNT_ID, "123.45"),
-            ledgerEntryWithAmount(DEFAULT_ACCOUNT_ID, "76.54"),
-            ledgerEntryWithAmount(DEFAULT_ACCOUNT_ID, "-10")
+        when(ledgerEntryRepository.findByAccountId(ACCOUNT_ID)).thenReturn(List.of(
+            ledgerEntryWithAmount(ACCOUNT_ID, "123.45"),
+            ledgerEntryWithAmount(ACCOUNT_ID, "76.54"),
+            ledgerEntryWithAmount(ACCOUNT_ID, "-10")
         ));
 
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
-        var balance = sut.getBalance(DEFAULT_ACCOUNT_ID);
+        var sut = createLedger(new BigDecimal("0.01"));
+        var balance = sut.getBalance(ACCOUNT_ID);
 
         assertThat(balance, closeTo(new BigDecimal("189.99"), MONEY_EPSILON));
     }
@@ -214,18 +320,18 @@ public class LedgerTest {
     public void whenGettingAPageOdAccountBalances_shouldSumTogetherAllLedgerItemsForGivenAccounts() {
         var altAccountID = UUID.randomUUID();
 
-        when(ledgerEntryRepository.findByAccountIdIn(List.of(DEFAULT_ACCOUNT_ID, altAccountID))).thenReturn(List.of(
-            ledgerEntryWithAmount(DEFAULT_ACCOUNT_ID, "123.45"),
-            ledgerEntryWithAmount(DEFAULT_ACCOUNT_ID, "76.54"),
+        when(ledgerEntryRepository.findByAccountIdIn(List.of(ACCOUNT_ID, altAccountID))).thenReturn(List.of(
+            ledgerEntryWithAmount(ACCOUNT_ID, "123.45"),
+            ledgerEntryWithAmount(ACCOUNT_ID, "76.54"),
             ledgerEntryWithAmount(altAccountID, "10"),
             ledgerEntryWithAmount(altAccountID, "-5")
         ));
 
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
-        var balances = sut.getBalances(List.of(DEFAULT_ACCOUNT_ID, altAccountID), null, null);
+        var sut = createLedger(new BigDecimal("0.01"));
+        var balances = sut.getBalances(List.of(ACCOUNT_ID, altAccountID), null, null);
 
         assertThat(balances, containsInAnyOrder(
-            dtoAccountBalancePair(DEFAULT_ACCOUNT_ID, 199.99),
+            dtoAccountBalancePair(ACCOUNT_ID, 199.99),
             dtoAccountBalancePair(altAccountID, 5.00)
         ));
     }
@@ -235,7 +341,7 @@ public class LedgerTest {
     public void whenGettingAPageOfAccountBalances_shouldPaginateItCorrectly() {
         var accounts = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
         var balances = sut.getBalances(accounts, 3, 1);
 
         assertAll(
@@ -258,7 +364,7 @@ public class LedgerTest {
         var page = new PageImpl<>(accounts, pageable, 2000);
         when(accountService.getAccounts(any())).thenReturn(page);
 
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
         var balances = sut.getBalances(null, 2, 2);
 
         assertThat(balances.getContent().stream().map(Pair::getFirst).toList(), contains(accountIds.toArray()));
@@ -276,7 +382,7 @@ public class LedgerTest {
         var page = new PageImpl<>(accounts, pageable, 2000);
         when(accountService.getAccounts(any())).thenReturn(page);
 
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
         var balances = sut.getBalances(List.of(), 2, 2);
 
         assertThat(balances.getContent().stream().map(Pair::getFirst).toList(), contains(accountIds.toArray()));
@@ -285,7 +391,7 @@ public class LedgerTest {
     @Test
     @DisplayName("given a non existent Account, when adding a deposit, should throw an error")
     public void givenAnNonExistentAccount_whenAddingADeposit_shouldThrowAnError() {
-        var sut = new Ledger(cardService, accountService, transactionRepository, ledgerEntryRepository, new BigDecimal("0.01"));
+        var sut = createLedger(new BigDecimal("0.01"));
 
         when(accountService.findExistingAccount(any())).thenThrow(new IllegalArgumentException());
 
@@ -293,6 +399,10 @@ public class LedgerTest {
             IllegalArgumentException.class, // TODO Change to an specific Exception later
             () -> sut.deposit(UUID.randomUUID(), new BigDecimal("123.45"))
         );
+    }
+
+    private Ledger createLedger(BigDecimal creditCardFee) {
+        return new Ledger(cardService, accountService, transactionRepository, transactionTransferRepository, ledgerEntryRepository, creditCardFee);
     }
 
     private static LedgerEntry ledgerEntryWithAmount(UUID accountId, String amount) {

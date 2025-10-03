@@ -1,13 +1,14 @@
 package br.com.gabryel.waes.rdc.banking.service;
 
+import br.com.gabryel.waes.rdc.banking.controller.dto.request.TransferRequestDto;
 import br.com.gabryel.waes.rdc.banking.controller.dto.request.WithdrawalRequestDto;
 import br.com.gabryel.waes.rdc.banking.model.entity.*;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionMethod;
-import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus;
 import br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionType;
 import br.com.gabryel.waes.rdc.banking.repository.LedgerEntryRepository;
 import br.com.gabryel.waes.rdc.banking.repository.TransactionRepository;
+import br.com.gabryel.waes.rdc.banking.repository.TransactionTransferRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,6 +36,8 @@ public class Ledger {
 
     private final TransactionRepository transactionRepository;
 
+    private final TransactionTransferRepository transactionTransferRepository;
+
     private final LedgerEntryRepository ledgerEntryRepository;
     private final BigDecimal creditCardFee;
 
@@ -42,6 +45,7 @@ public class Ledger {
         CardService cardService,
         AccountService accountService,
         TransactionRepository transactionRepository,
+        TransactionTransferRepository transactionTransferRepository,
         LedgerEntryRepository ledgerEntryRepository,
         @Value("${app.transaction.fee.credit}")
         BigDecimal creditCardFee
@@ -49,6 +53,7 @@ public class Ledger {
         this.cardService = cardService;
         this.accountService = accountService;
         this.transactionRepository = transactionRepository;
+        this.transactionTransferRepository = transactionTransferRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.creditCardFee = creditCardFee;
     }
@@ -67,28 +72,51 @@ public class Ledger {
     @Transactional
     public Transaction withdraw(UUID accountId, WithdrawalRequestDto request) {
         var account = accountService.findExistingAccount(accountId);
-        var chosenCard = getChosenCard(accountId, request, account);
-        var fee = calculateTransactionFee(request.amount(), chosenCard.getType());
+        var transaction = createTransaction(account, TransactionType.WITHDRAWAL, request.cardId(), request.amount());
 
-        validateBalance(accountId, request, fee);
+        ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), LedgerEntryType.WITHDRAWAL));
 
-        var transaction = transactionRepository.save(
+        if (!transaction.getFeeAmount().equals(ZERO))
+            ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), LedgerEntryType.FEE));
+
+        return transaction;
+    }
+
+    public Transaction transfer(UUID accountId, TransferRequestDto request) {
+        var account = accountService.findExistingAccount(accountId);
+        var receiverAccount = accountService.findExistingAccount(request.receiverAccountId());
+
+        var transaction = createTransaction(account, TransactionType.TRANSFER, request.cardId(), request.amount());
+
+        transactionTransferRepository.save(new TransactionTransfer(transaction.getId(), transaction, receiverAccount));
+
+        ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), LedgerEntryType.TRANSFER_SENT));
+        ledgerEntryRepository.save(createLedgerEntry(receiverAccount, transaction, request.amount(), LedgerEntryType.TRANSFER_RECEIVED));
+
+        if (!transaction.getFeeAmount().equals(ZERO))
+            ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), LedgerEntryType.FEE));
+
+        return transaction;
+    }
+
+    private Transaction createTransaction(Account account, TransactionType transactionType, UUID cardId, BigDecimal amount) {
+        var accountId = account.getId();
+
+        var chosenCard = getChosenCard(accountId, cardId, account);
+        var fee = calculateTransactionFee(amount, chosenCard.getType());
+
+        validateBalance(accountId, amount, fee);
+
+        return transactionRepository.save(
             createTransaction(
                 account,
-                request.amount(),
-                TransactionType.WITHDRAWAL,
+                amount,
+                transactionType,
                 chosenCard.getType().asTransactionMethod(),
                 chosenCard,
                 fee
             )
         );
-
-        ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), LedgerEntryType.WITHDRAWAL));
-
-        if (!fee.equals(ZERO))
-            ledgerEntryRepository.save(createLedgerEntry(account, transaction, fee.negate(), LedgerEntryType.FEE));
-
-        return transaction;
     }
 
     public BigDecimal getBalance(UUID id) {
@@ -127,11 +155,11 @@ public class Ledger {
             .reduce(ZERO, BigDecimal::add);
     }
 
-    private AccountCard getChosenCard(UUID accountId, WithdrawalRequestDto request, Account account) {
+    private AccountCard getChosenCard(UUID accountId, UUID cardId, Account account) {
         return cardService.getCards(account.getId()).stream()
-            .filter(card -> card.getId() == request.cardId())
+            .filter(card -> card.getId() == cardId)
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Card with id " + request.cardId() + " not found on account with id " + accountId));
+            .orElseThrow(() -> new IllegalArgumentException("Card with id " + cardId + " not found on account with id " + accountId));
     }
 
     private BigDecimal calculateTransactionFee(BigDecimal amount, CardType type) {
@@ -141,8 +169,8 @@ public class Ledger {
         return ZERO;
     }
 
-    private void validateBalance(UUID accountId, WithdrawalRequestDto request, BigDecimal fee) {
-        var total = request.amount().add(fee);
+    private void validateBalance(UUID accountId, BigDecimal amount, BigDecimal fee) {
+        var total = amount.add(fee);
         var balance = getBalance(accountId);
 
         if (total.compareTo(balance) > 0)
