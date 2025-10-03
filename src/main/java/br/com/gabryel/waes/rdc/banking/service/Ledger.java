@@ -29,6 +29,8 @@ import static br.com.gabryel.waes.rdc.banking.model.entity.enums.LedgerEntryType
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionMethod.ATM;
 import static br.com.gabryel.waes.rdc.banking.model.entity.enums.TransactionStatus.COMPLETED;
 import static java.math.BigDecimal.ZERO;
+import static java.math.RoundingMode.FLOOR;
+import static java.math.RoundingMode.HALF_EVEN;
 import static java.util.stream.Collectors.groupingBy;
 
 @Service
@@ -68,7 +70,7 @@ public class Ledger {
         var transaction = transactionRepository.save(
             createTransactionEntity(account, amount, TransactionType.DEPOSIT, ATM, null, ZERO));
 
-        ledgerEntryRepository.save(createLedgerEntry(account, transaction, amount, LedgerEntryType.DEPOSIT));
+        ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getAmount(), LedgerEntryType.DEPOSIT));
 
         return transaction;
     }
@@ -78,9 +80,9 @@ public class Ledger {
         var account = accountService.findExistingAccount(accountId);
         var transaction = createTransaction(account, TransactionType.WITHDRAWAL, request.cardId(), request.amount());
 
-        ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), LedgerEntryType.WITHDRAWAL));
+        ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getAmount().negate(), LedgerEntryType.WITHDRAWAL));
 
-        if (!transaction.getFeeAmount().equals(ZERO))
+        if (transaction.getFeeAmount().compareTo(ZERO) != 0)
             ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), FEE));
 
         return transaction;
@@ -96,10 +98,10 @@ public class Ledger {
         var transfer = TransactionTransfer.builder().transaction(transaction).receiver(receiverAccount).build();
         transactionTransferRepository.save(transfer);
 
-        ledgerEntryRepository.save(createLedgerEntry(account, transaction, request.amount().negate(), TRANSFER_SENT));
-        ledgerEntryRepository.save(createLedgerEntry(receiverAccount, transaction, request.amount(), TRANSFER_RECEIVED));
+        ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getAmount().negate(), TRANSFER_SENT));
+        ledgerEntryRepository.save(createLedgerEntry(receiverAccount, transaction, transaction.getAmount(), TRANSFER_RECEIVED));
 
-        if (!transaction.getFeeAmount().equals(ZERO))
+        if (transaction.getFeeAmount().compareTo(ZERO) != 0)
             ledgerEntryRepository.save(createLedgerEntry(account, transaction, transaction.getFeeAmount().negate(), FEE));
 
         return transaction;
@@ -109,14 +111,15 @@ public class Ledger {
         var accountId = account.getId();
 
         var chosenCard = cardService.getExistentCard(accountId, cardId);
-        var fee = calculateTransactionFee(amount, chosenCard.getType());
+        var scaledAmount = scaleToMoney(amount);
+        var fee = calculateTransactionFee(scaledAmount, chosenCard.getType());
 
-        validateBalance(accountId, amount, fee);
+        validateBalance(accountId, scaledAmount, fee);
 
         return transactionRepository.save(
             createTransactionEntity(
                 account,
-                amount,
+                scaledAmount,
                 transactionType,
                 chosenCard.getType().asTransactionMethod(),
                 chosenCard,
@@ -173,7 +176,7 @@ public class Ledger {
 
     private BigDecimal calculateTransactionFee(BigDecimal amount, CardType type) {
         if (type == CardType.CREDIT)
-            return amount.multiply(creditCardFee);
+            return scaleToMoney(amount.multiply(creditCardFee));
 
         return ZERO;
     }
@@ -207,12 +210,16 @@ public class Ledger {
             .method(method)
             .type(type)
             .card(card)
-            .feeAmount(fee)
             // Always COMPLETED as currently we are only doing synchronous operations
             // PENDING could be used for asynchronous operations, such as CREDIT_CARD authorizations, antifraud, etc
             .status(COMPLETED)
             .owner(account)
-            .amount(amount)
+            .amount(amount.setScale(2, FLOOR))
+            .feeAmount(fee.setScale(2, FLOOR))
             .build();
+    }
+
+    private static BigDecimal scaleToMoney(BigDecimal amount) {
+        return amount.setScale(2, HALF_EVEN);
     }
 }
